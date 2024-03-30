@@ -29,7 +29,7 @@ export default {
   },
   methods:{
     handleSubmit(){
-      axios.post("http://127.0.0.1:8000/register/",{'username':this.username,'password':this.password},{
+      axios.post("http://127.0.0.1:8000/login/",{'username':this.username,'password':this.password},{
       headers: {
         'Content-Type': 'multipart/form-data'
       }

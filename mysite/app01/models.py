@@ -4,4 +4,4 @@ from django.db import models
 class userInfo(models.Model):
     name = models.CharField(max_length=32,primary_key=True)
     password = models.CharField(max_length=64)
-    role = models.IntegerField()
+    role = models.CharField(max_length=32)
