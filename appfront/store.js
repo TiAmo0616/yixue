@@ -15,10 +15,10 @@ const store = new Vuex.Store({
       state.username = username;
       state.role = role
     },
-    logout(state,username,role) {
+    logout(state) {
       state.isLoggedIn = false;
       state.username = '';
-      this.role = ''
+      state.role = ''
     }
   }
 });

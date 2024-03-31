@@ -1,9 +1,33 @@
 <template>
-
+  <div class="hello">
+    
+    <h2>注册</h2>  
+    <form @submit.prevent="register">  
+      <div class="form-group">  
+      我是
+      <el-radio v-model="role" label="1">老师</el-radio>
+      <el-radio v-model="role" label="2">学生</el-radio>
+      </div> 
+      <div class="form-group">  
+        <label for="username">用户名:</label>  
+        <input type="text" id="username" v-model="username" required>  
+      </div>  
+      <div class="form-group">  
+        <label for="password">密码:</label>  
+        <input type="password" id="password" v-model="password" required>  
+      </div>  
+      <div class="form-group">  
+        <label for="password">确认密码:</label>  
+        <input type="password" id="password" v-model="confirm_password" required>  
+      </div>  
+      <button type="submit">注册</button>  
+    </form>  
+  </div>
 
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'register',
   data () {

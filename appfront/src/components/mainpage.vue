@@ -1,7 +1,7 @@
 <template>
 <div>
-    
     <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
+    
 </div>
 
 </template>
@@ -34,12 +34,7 @@ export default {
     }
   },
   methods:{
-    enterClass(){
-
-    },
-    login(){
-        this.$router.push({ name: 'login' })
-    }
+    
   }
 }
 </script>

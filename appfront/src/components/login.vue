@@ -1,9 +1,24 @@
 <template>
-
+    <div class="hello">
+    
+    <h2>登录</h2>  
+    <form @submit.prevent="login">  
+      <div class="form-group">  
+        <label for="username">用户名:</label>  
+        <input type="text" id="username" v-model="username" required>  
+      </div>  
+      <div class="form-group">  
+        <label for="password">密码:</label>  
+        <input type="password" id="password" v-model="password" required>  
+      </div>  
+      <button type="submit">登录</button>  
+    </form>  
+  </div>
 
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'login',
   data () {
@@ -22,7 +37,7 @@ export default {
             console.log(response.data)
             if(response.data.status == 'success'){
                 const role = response.data.role
-                this.$store.commit('login');
+                this.$store.commit('login',this.username,role);
                 this.$router.push({ name: 'mainpage' ,params:{"username":this.username,'role':role}});
             }
             else if(response.data.status == 'unmatch'){alert("用户名密码错误！")}
