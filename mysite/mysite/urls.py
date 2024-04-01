@@ -21,4 +21,8 @@ from app01 import views
 urlpatterns = [
     path('register/',views.register),
     path('login/',views.login),
+    path('edit/', views.editInfo),
+    path('handleImage/',views.upload_image),
+    path('showInfo/',views.showInfo),
+
 ]
