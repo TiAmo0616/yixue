@@ -83,3 +83,18 @@ def showInfo(request):
     user = userInfo.objects.filter(name=name).first()
 
     return JsonResponse({'status': 'success','name':user.username,'sex':user.sex,'info':user.info,'img':"http://127.0.0.1:8000/static/"+user.img})
+
+
+def changePasswwd(request):
+    name = request.POST.get('username')
+    passwd = request.POST.get('passwd')
+    user = userInfo.objects.filter(name=name).first()
+    user.password = passwd
+    user.save()
+    return JsonResponse({'status': 'success'})
+
+def deleteUser(request):
+    name = request.POST.get('username')
+    user = userInfo.objects.filter(name=name).first()
+    user.delete()
+    return JsonResponse({'status': 'success'})

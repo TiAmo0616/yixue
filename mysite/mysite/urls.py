@@ -24,5 +24,7 @@ urlpatterns = [
     path('edit/', views.editInfo),
     path('handleImage/',views.upload_image),
     path('showInfo/',views.showInfo),
+    path('changePasswd/',views.changePasswwd),
+    path('deleteUser/',views.deleteUser),
 
 ]

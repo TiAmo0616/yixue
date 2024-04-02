@@ -30,8 +30,18 @@
     性别：{{ sex }}
     个人简介：{{ info }}
     <button @click="editInfo">修改</button>
+
+    <div>
+      <button @click="changePasswd">修改密码</button>
+    </div>
+
+    <div>
+      <button @click="zhuxiao">注销账号</button>
+    </div>
+
   </div>
   
+
   <div v-show="edit">
     <form @submit.prevent="submitInfo">  
       <div class="form-group">  
@@ -56,6 +66,29 @@
       <button type="submit">确认修改</button>  
     </form>  
   </div>
+
+  <div v-show="editPassword">
+    <form @submit.prevent="submitPasswd">  
+      <div class="form-group">  
+        <label for="username">输入新密码:</label>  
+        <input type="password" id="newPasswd" v-model="newPasswd" required>  
+      </div>  
+      
+      <div class="form-group">  
+        <label for="info">确认密码：</label>  
+        <input type="password" id="confirm_newPasswd" v-model="confirm_newPasswd" required>  
+      </div>  
+      <button type="submit">确认修改</button>  
+    </form>  
+  </div>
+
+  <div v-show="zhuxiaoShow">
+      请确定是否注销
+      <button type="submit" @click="submitzhuxiao">确认注销</button>  
+      <button type="submit" @click="zhuxiaoback">返回</button>  
+  </div>
+  
+
 </div>
 
 </template>
@@ -66,9 +99,12 @@ export default {
   name: 'userInfo',
   data () {
     return {
+      zhuxiaoShow:false,
+      editPassword:false,
       showUpload: true,
       fileList: [],
-     
+      newPasswd:'',
+      confirm_newPasswd:'',
       upload:false,
       imageUrl: '',
       image: null,
@@ -124,9 +160,59 @@ export default {
     }
   },
   methods:{
+    submitzhuxiao(){
+      axios.post("http://127.0.0.1:8000/deleteUser/",{'username':this.username},{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        if(response.data.status == 'success'){
+          this.$store.commit("logout")
+          this.$router.push({ name: 'mainpage'});
+        }
+         
+      })
+      .catch(error => {
+        
+        console.error('Error:', error);
+      });
+    },
+    zhuxiao(){
+      this.show = false
+      this.zhuxiaoShow = true
+    },
+    zhuxiaoback(){
+      this.zhuxiaoShow =  false
+      this.show = true
+    },
     editInfo(){
       this.show = false
       this.edit = true
+    },
+    changePasswd(){
+      this.editPassword = true
+      this.show = false
+    },
+    submitPasswd(){
+      axios.post("http://127.0.0.1:8000/changePasswd/",{'username':this.username,'passwd':this.newPasswd},{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        if(response.data.status == 'success'){
+          this.editPassword = false
+          this.show = true
+        }
+         
+      })
+      .catch(error => {
+        
+        console.error('Error:', error);
+      });
     },
     submitInfo(){
       axios.post("http://127.0.0.1:8000/edit/",{'username':this.username,'sex':this.sex,'info':this.info,'name':this.name},{
