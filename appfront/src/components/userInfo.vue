@@ -1,5 +1,6 @@
 <template>
 <div>
+  <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
   <div v-show="show">
     <div>
       <div v-show="upload" class="modal">
@@ -95,8 +96,12 @@
 
 <script>
 import axios from 'axios'
+import Daohanglan from './daohanglan.vue';
 export default {
   name: 'userInfo',
+  components:{
+    Daohanglan,
+  },
   data () {
     return {
       zhuxiaoShow:false,

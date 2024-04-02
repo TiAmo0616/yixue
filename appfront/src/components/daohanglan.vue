@@ -48,6 +48,7 @@ export default {
   methods:{
     logout(){
         this.$store.commit("logout")
+        this.$router.push({ name: 'mainpage'});
     },
     editProfile(){
         this.$router.push({ name: 'userInfo' })
