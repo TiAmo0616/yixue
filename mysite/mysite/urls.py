@@ -26,5 +26,14 @@ urlpatterns = [
     path('showInfo/',views.showInfo),
     path('changePasswd/',views.changePasswwd),
     path('deleteUser/',views.deleteUser),
+    path('showCourse/',views.showCourse),
+    path('listCourses/',views.listCourses),
+    path('listCoursesAll/',views.listCoursesAll),
+    path('createCourse/',views.createCourses),
+    path('teacherCourse/',views.teacherCourses),
+    path('closeCourse/',views.closeCourse),
+    path('listing/',views.listing),
+
+
 
 ]

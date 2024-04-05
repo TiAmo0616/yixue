@@ -7,6 +7,9 @@ import login from '@/components/login'
 import register from '@/components/register'
 import userInfo from '@/components/userInfo'
 import myCourse from '@/components/myCourse'
+import teacherPage from '@/components/teacherPage'
+import studentPage from '@/components/studentPage'
+import singleCourse from '@/components/singleCourse'
 Vue.use(Router)
 Vue.use(Vuex);
 const state = {
@@ -47,7 +50,8 @@ export default new Router({
     {
       path: '/login',
       name: 'login',
-      component: login
+      component: login,
+      props: true
     },
     {
       path: '/register',
@@ -57,12 +61,32 @@ export default new Router({
     {
       path: '/userInfo',
       name: 'userInfo',
-      component: userInfo
+      component: userInfo,
+      props: true
     },
     {
       path: '/myCourse',
       name: 'myCourse',
-      component: myCourse
+      component: myCourse,
+      props: true
+    },
+    {
+      path: '/teacherPage',
+      name: 'teacherPage',
+      component: teacherPage,
+      props: true
+    },
+    {
+      path: '/studentPage',
+      name: 'studentPage',
+      component: studentPage,
+      props: true
+    },
+    {
+      path: '/singleCourse',
+      name: 'singleCourse',
+      component: singleCourse,
+      props: true
     }
   ]
 })

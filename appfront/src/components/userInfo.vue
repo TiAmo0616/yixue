@@ -3,25 +3,7 @@
   <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
   <div v-show="show">
     <div>
-      <div v-show="upload" class="modal">
-        <div class="modal-content">
-          <el-upload
-          v-model="fileList"
-              ref="uploadref"
-              action="#"
-              :auto-upload="false"
-              list-type="picture"
-              :on-preview="handlePictureCardPreview"
-              :on-change="handleChange"
-              :on-remove="handleRemove"
-          >
-              <i class="el-icon-plus"></i>
-          </el-upload>
-          <el-button @click="handleFileUpload">确认</el-button>
-        </div>
-      </div>
       
-    
             <img :src="image" alt="" />
 
         <el-button @click="uploadImage">更换头像</el-button>
@@ -41,52 +23,79 @@
     </div>
 
   </div>
-  
 
-  <div v-show="edit">
-    <form @submit.prevent="submitInfo">  
-      <div class="form-group">  
-        <label for="username">姓名:</label>  
-        <input type="text" id="username" v-model="name" required>  
-      </div>  
-      <div class="form-group">  
-        <label for="password">性别:</label>  
-        <el-select v-model="sex" placeholder="请选择">
-          <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value">
-          </el-option>
-      </el-select>
-      </div>  
-      <div class="form-group">  
-        <label for="info">个人简介：</label>  
-        <input type="textarea" id="username" v-model="info" required>  
-      </div>  
-      <button type="submit">确认修改</button>  
-    </form>  
+  <!-- 修改头像 -->
+  <div v-show="upload" class="modal">
+        <div class="modal-content">
+          <el-upload
+          v-model="fileList"
+              ref="uploadref"
+              action="#"
+              :auto-upload="false"
+              list-type="picture"
+              :on-preview="handlePictureCardPreview"
+              :on-change="handleChange"
+              :on-remove="handleRemove"
+          >
+              <i class="el-icon-plus"></i>
+          </el-upload>
+          <el-button @click="handleFileUpload">确认</el-button>
+        </div>
+      </div>
+
+  <!-- 修改信息 -->
+  <div v-show="edit" class="modal">
+        <div class="modal-content">
+          <form @submit.prevent="submitInfo">  
+            <div class="form-group">  
+              <label for="username">姓名:</label>  
+              <input type="text" id="username" v-model="name" required>  
+            </div>  
+            <div class="form-group">  
+              <label for="password">性别:</label>  
+              <el-select v-model="sex" placeholder="请选择">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+            </el-select>
+            </div>  
+            <div class="form-group">  
+              <label for="info">个人简介：</label>  
+              <input type="textarea" id="username" v-model="info" required>  
+            </div>  
+            <button type="submit">确认修改</button>  
+          </form>  
+        </div>
   </div>
 
-  <div v-show="editPassword">
-    <form @submit.prevent="submitPasswd">  
-      <div class="form-group">  
-        <label for="username">输入新密码:</label>  
-        <input type="password" id="newPasswd" v-model="newPasswd" required>  
-      </div>  
-      
-      <div class="form-group">  
-        <label for="info">确认密码：</label>  
-        <input type="password" id="confirm_newPasswd" v-model="confirm_newPasswd" required>  
-      </div>  
-      <button type="submit">确认修改</button>  
-    </form>  
+  <!-- 修改密码 -->
+  <div v-show="editPassword" class="modal">
+        <div class="modal-content">
+          <form @submit.prevent="submitPasswd">  
+            <div class="form-group">  
+              <label for="username">输入新密码:</label>  
+              <input type="password" id="newPasswd" v-model="newPasswd" required>  
+            </div>  
+            
+            <div class="form-group">  
+              <label for="info">确认密码：</label>  
+              <input type="password" id="confirm_newPasswd" v-model="confirm_newPasswd" required>  
+            </div>  
+            <button type="submit">确认修改</button>  
+          </form>  
+        </div>
   </div>
 
-  <div v-show="zhuxiaoShow">
-      请确定是否注销
-      <button type="submit" @click="submitzhuxiao">确认注销</button>  
-      <button type="submit" @click="zhuxiaoback">返回</button>  
+  <!-- 确认是否注销 -->
+  <div v-show="zhuxiaoShow" class="modal">
+        <div class="modal-content">
+              请确定是否注销
+          <button type="submit" @click="submitzhuxiao">确认注销</button>  
+          <button type="submit" @click="zhuxiaoback">返回</button>  
+        </div>
   </div>
   
 

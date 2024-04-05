@@ -57,7 +57,8 @@ export default {
         this.$router.push({ name: 'login' })
     },
     enterClass(){
-      this.$router.push({ name: 'myCourse' })
+      if(this.role == '学生'){this.$router.push({ name: 'studentPage' })}
+      else{this.$router.push({ name: 'teacherPage' })}
     },
 
   }

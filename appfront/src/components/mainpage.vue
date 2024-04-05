@@ -1,13 +1,40 @@
 <template>
 <div>
+  <!-- 导航栏 -->
+  <div>
     <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
+  </div>
+  <!-- 图片滑动 -->
+  <div>
+
+  </div>
+  <!-- 显示课程 -->
+  <div>
+    <div>
+      课程精选
+    </div>
+    <div>
+      <el-row :gutter="20">
+        <el-col v-for="course in courses" :key="course.cid" :span="6">
+          <div class="course-card">
+            <img :src="course.img" alt="" width="200"/>
+            <div class="course-info">
+              <h3>{{ course.cname }}</h3>
+              <h4>{{ course.teacher }}|{{ course.status }}</h4>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+  </div>
+    
     
 </div>
 
 </template>
 
 <script>
-
+import axios from 'axios'
 import Daohanglan from './daohanglan.vue';
 export default {
   name: 'mainpage',
@@ -19,8 +46,28 @@ export default {
   },
   data () {
     return {
-      islogged:false
+      islogged:false,
+      courses: [] 
     }
+  },
+  created(){
+    axios.post("http://127.0.0.1:8000/listCourses/",{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        if(response.data.status == 'success'){
+          this.courses = response.data.courses
+        }
+         
+      })
+      .catch(error => {
+        
+        console.error('Error:', error);
+      });
+      
   },
   computed: {
     isLoggedIn() {
@@ -34,7 +81,7 @@ export default {
     }
   },
   methods:{
-    
+   
   }
 }
 </script>

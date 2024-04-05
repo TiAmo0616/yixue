@@ -1,0 +1,192 @@
+<template>
+<div>
+    <!-- 导航栏 -->
+    <div>
+        <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
+    </div>
+    <!-- 课程介绍 -->
+    <div>
+        <img :src="course.img" alt="" width="200"/>
+              
+        {{ course.cname }}
+             
+                
+        学生人数：{{ course.stuNum }}
+        学时:{{ course.xueshi }}
+        {{ course.status }}
+    </div>
+    <!-- 服务 -->
+    <div>
+        <el-tabs v-model="activeName" @tab-click="handleClick">
+            <el-tab-pane label="学习资源" name="first">学习资源</el-tab-pane>
+            <el-tab-pane label="作业" name="second">作业</el-tab-pane>
+            <el-tab-pane label="问答" name="third">问答</el-tab-pane>
+            <el-tab-pane label="学生管理" name="fourth">学生管理</el-tab-pane>
+        </el-tabs>
+    </div>
+    <!-- 学习资源（录播课程） -->
+    <div v-show="firstshow">
+        
+    </div>
+    <!-- 作业 -->
+    <div v-show="sencondshow">
+        <div>
+            <button @click="showWork('ing')">未截止</button>
+            <button @click="showWork('ed')">已截止</button>
+            <button @click="showWork('all')">全部</button>
+            <button @click="gotofabu">发布</button>
+        </div>
+        <div>
+
+        </div>
+        <!-- 发布作业 -->
+        <div v-show="fabushow" class="modal">
+            <div class="modal-content">
+            <form @submit.prevent="submitfabu">  
+                <div class="form-group">  
+                <label for="username">输入新密码:</label>  
+                <input type="password" id="newPasswd" v-model="newPasswd" required>  
+                </div>  
+                
+                <div class="form-group">  
+                <label for="info">确认密码：</label>  
+                <input type="password" id="confirm_newPasswd" v-model="confirm_newPasswd" required>  
+                </div>  
+                <button type="submit">确认修改</button>  
+            </form>  
+            </div>
+        </div>
+        <!-- 发布作业end -->
+    </div>
+    <!-- 问答 -->
+    <div v-show="thirdshow">
+
+    </div>
+    <!-- 学生管理 -->
+    <div v-show="fourthshow">
+
+    </div>
+
+</div>
+
+</template>
+
+<script>
+import axios from 'axios'
+import Daohanglan from './daohanglan.vue';
+export default {
+
+  name: 'singleCourse',
+  props: ['cid'],
+  components:{
+    Daohanglan,
+  },
+  computed: {
+    isLoggedIn() {
+      return this.$store.state.isLoggedIn;
+        },
+    username() {
+      return this.$store.state.username;
+    },
+    role() {
+      return this.$store.state.role;
+    },
+},
+  data () {
+    return {
+      course:'',
+      activeName: 'first',
+      firstshow:true,
+      sencondshow:false,
+      thirdshow:false,
+      fourthshow:false,
+      works:[],
+      fabushow:false,
+
+
+
+    }
+  },
+  created(){
+    
+    axios.post("http://127.0.0.1:8000/showCourse/",{'cid':this.cid},{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        if(response.data.status == 'success'){
+          this.course = response.data.course
+        }
+         
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+      
+  },
+  
+  methods: {
+      handleClick(tab) {
+        if(tab.name == 'first'){
+            this.firstshow = true
+            this.sencondshow = false
+            this.thirdshow = false
+            this.fourthshow = false
+        }
+        else if(tab.name == 'second'){
+            this.firstshow = false
+            this.sencondshow = true
+            this.thirdshow = false
+            this.fourthshow = false
+        }else if(tab.name == 'third'){
+            this.firstshow = false
+            this.sencondshow = false
+            this.thirdshow = true
+            this.fourthshow = false
+        }
+        else{
+            this.firstshow = false
+            this.sencondshow = false
+            this.thirdshow = false
+            this.fourthshow = true
+        }
+      },
+      showWork(status){
+
+      },
+    gotofabu(){
+        this.fabushow = true
+      },
+    submitfabu(){
+
+      }
+    }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+.modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  width: 300px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+</style>
