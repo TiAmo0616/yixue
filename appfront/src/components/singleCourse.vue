@@ -36,23 +36,45 @@
             <button @click="showWork('all')">全部</button>
             <button @click="gotofabu">发布</button>
         </div>
-        <div>
 
+        <div>
+            <el-row v-for="work in works" :key="work.wid">
+               
+                {{ work.wname }}
+                
+               开始时间{{ work.begin }}
+               截止时间{{ work.end }}
+            </el-row>
         </div>
         <!-- 发布作业 -->
         <div v-show="fabushow" class="modal">
             <div class="modal-content">
             <form @submit.prevent="submitfabu">  
                 <div class="form-group">  
-                <label for="username">输入新密码:</label>  
-                <input type="password" id="newPasswd" v-model="newPasswd" required>  
+                <label for="new_wname">作业标题：</label>  
+                <input type="text" id="new_wname" v-model="new_wname" required>  
                 </div>  
                 
                 <div class="form-group">  
-                <label for="info">确认密码：</label>  
-                <input type="password" id="confirm_newPasswd" v-model="confirm_newPasswd" required>  
+                    <label for="info">开始时间</label>  
+                    <el-date-picker
+                        v-model="newbegin"
+                        type="datetime"
+                        placeholder="选择日期时间">
+                    </el-date-picker>
                 </div>  
-                <button type="submit">确认修改</button>  
+
+                <div class="form-group">  
+                    <label for="info">截止时间</label>  
+                    <el-date-picker
+                        v-model="newend"
+                        type="datetime"
+                        placeholder="选择日期时间">
+                    </el-date-picker>
+                </div>  
+
+                <button type="submit">确认创建</button>  
+                <button @click="workback">取消</button>
             </form>  
             </div>
         </div>
@@ -102,6 +124,9 @@ export default {
       fourthshow:false,
       works:[],
       fabushow:false,
+      new_wname:'',
+      newbegin:'',
+      newend:'',
 
 
 
@@ -128,6 +153,12 @@ export default {
   },
   
   methods: {
+    workback(){
+        this.fabushow = false
+        this.new_wname = ''
+        this.newbegin = ''
+        this.newend = ''
+    },
       handleClick(tab) {
         if(tab.name == 'first'){
             this.firstshow = true
@@ -136,6 +167,21 @@ export default {
             this.fourthshow = false
         }
         else if(tab.name == 'second'){
+            axios.post("http://127.0.0.1:8000/showWorks/",{'cid':this.cid},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                this.works = response.data.works
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
             this.firstshow = false
             this.sencondshow = true
             this.thirdshow = false
@@ -160,8 +206,27 @@ export default {
         this.fabushow = true
       },
     submitfabu(){
-
-      }
+        console.log(this.new_wname)
+        axios.post("http://127.0.0.1:8000/createWork/",{'cid':this.cid,'wname':this.new_wname,'begin':this.newbegin,'end':this.newend},{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+        .then(response =>{
+            console.log(response.data)
+            if(response.data.status == 'success'){
+            this.works = response.data.works
+            this.fabushow = false
+            this.new_wname = ''
+            this.newbegin = ''
+            this.newend = ''
+            }
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+        }
     }
 }
 </script>

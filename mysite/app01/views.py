@@ -11,8 +11,17 @@ from app01.models import userInfo
 from app01.models import Course
 import uuid
 
-def generate_course_code():
-    course_code = str(uuid.uuid4().hex)[:8]  # 生成一个32位的UUID，并截取前8位作为课程码
+from app01.models import Work
+
+from app01.models import w_c
+
+from app01.models import sc
+
+from app01.models import w_s
+
+
+def generate_course_code(index):
+    course_code = str(uuid.uuid4().hex)[:index]  # 生成一个32位的UUID，并截取前8位作为课程码
     return course_code
 
 def register(request):
@@ -109,8 +118,6 @@ def deleteUser(request):
 #显示一个具体课程
 def showCourse(request):
     cid = request.POST.get('cid')
-
-    print(cid)
     course = Course.objects.filter(cid=cid).first()
     temp = {}
     temp['cname'] = course.cname
@@ -174,7 +181,7 @@ def createCourses(request):
     course.username = username
     course.cname = cname
     course.img = file_name
-    course.cid = generate_course_code()
+    course.cid = generate_course_code(8)
     course.xueshi = xueshi
     course.introduction = introduction
     course.teacher = teacher
@@ -259,3 +266,55 @@ def listing(request):
         return JsonResponse({'status': 'success', 'courses': res})
 
 
+def createWork(request):
+    cid = request.POST.get('cid')
+    wname = request.POST.get('wname')
+    begin = request.POST.get('begin')
+    end = request.POST.get('end')
+    wid = generate_course_code(12)
+    work = Work()
+    work.wname = wname
+    work.wid = wid
+    work.begin = begin
+    work.end = end
+    work.save()
+
+    conn = w_c()
+    conn.cid = cid
+    conn.wid = wid
+    conn.save()
+
+    #发布给学生
+    students = sc.objects.filter(cid=cid)
+    for student in students:
+        name = student.stuName
+        ws= w_s()
+        ws.wid = wid
+        ws.name = name
+        ws.save()
+
+
+    res = searchWork(cid)
+
+    return JsonResponse({'status': 'success', 'works': res})
+
+
+def searchWork(cid):
+    works = w_c.objects.filter(cid=cid)
+    res=[]
+    for work in works:
+        temp={}
+        if work.cid == cid:
+            wid = work.wid
+            ws = Work.objects.filter(wid=wid).first()
+
+            temp['wname'] = ws.wname
+            temp['begin'] = ws.begin
+            temp['end'] = ws.end
+            res.append(temp)
+    return res
+
+def showWorks(request):
+    cid = request.POST.get('cid')
+    res = searchWork(cid)
+    return JsonResponse({'status': 'success', 'works': res})

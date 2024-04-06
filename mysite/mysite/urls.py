@@ -33,6 +33,8 @@ urlpatterns = [
     path('teacherCourse/',views.teacherCourses),
     path('closeCourse/',views.closeCourse),
     path('listing/',views.listing),
+    path('createWork/',views.createWork),
+    path('showWorks/',views.showWorks),
 
 
 
