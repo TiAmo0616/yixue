@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
@@ -13,11 +13,12 @@ import uuid
 
 from app01.models import Work
 
-from app01.models import w_c
 
 from app01.models import sc
 
 from app01.models import w_s
+
+from app01.models import question
 
 
 def generate_course_code(index):
@@ -118,13 +119,23 @@ def deleteUser(request):
 #显示一个具体课程
 def showCourse(request):
     cid = request.POST.get('cid')
+    username = request.POST.get('username')
     course = Course.objects.filter(cid=cid).first()
+    students = sc.objects.filter(cid=cid)
     temp = {}
+    temp['already'] = 0
+    for student in students:
+        if student.stuName == username:
+            temp['already'] = 1
+            break
+
     temp['cname'] = course.cname
     temp['img'] = "http://127.0.0.1:8000/static/" + course.img
-    temp['stuNum'] = course.stuNum
+    temp['stuNum'] = len(students)
     temp['xueshi'] = course.xueshi
     temp['status'] = course.status
+    temp['teacher'] = course.teacher
+    temp['introduction'] = course.introduction
 
     return JsonResponse({'status': 'success','course':temp})
 
@@ -155,6 +166,7 @@ def listCoursesAll(request):
         temp['cname']= course.cname
         temp['img'] =  "http://127.0.0.1:8000/static/"+course.img
         temp['status'] = course.status
+        temp['teacher'] = course.teacher
         res.append(temp)
     return JsonResponse({'status':'success','courses':res})
 
@@ -191,10 +203,11 @@ def createCourses(request):
     res = []
     for course in courses:
         temp = {}
+        students = sc.objects.filter(cid=course.cid)
         temp['cid'] = course.cid
         temp['cname'] = course.cname
         temp['img'] = "http://127.0.0.1:8000/static/" + course.img
-        temp['stuNum'] = course.stuNum
+        temp['stuNum'] = len(students)
         temp['xueshi'] = course.xueshi
         temp['status'] = course.status
         res.append(temp)
@@ -207,14 +220,28 @@ def teacherCourses(request):
     res=[]
     for course in courses:
         temp = {}
+        students = sc.objects.filter(cid=course.cid)
         temp['cid'] = course.cid
         temp['cname'] = course.cname
         temp['img'] = "http://127.0.0.1:8000/static/"+ course.img
-        temp['stuNum'] = course.stuNum
+        temp['stuNum'] = len(students)
         temp['xueshi'] = course.xueshi
         temp['status'] = course.status
         res.append(temp)
     return JsonResponse({'status': 'success', 'courses': res})
+
+def searchCourse(cid):
+    course = Course.objects.filter(cid=cid).first()
+    temp = {}
+    students = sc.objects.filter(cid=cid)
+    temp['cid'] = course.cid
+    temp['cname'] = course.cname
+    temp['img'] = "http://127.0.0.1:8000/static/" + course.img
+    temp['stuNum'] = len(students)
+    temp['xueshi'] = course.xueshi
+    temp['status'] = course.status
+    return temp
+
 
 # 结束课程
 def closeCourse(request):
@@ -228,10 +255,11 @@ def closeCourse(request):
     res = []
     for course in courses:
         temp = {}
+        students = sc.objects.filter(cid=course.cid)
         temp['cid'] = course.cid
         temp['cname'] = course.cname
         temp['img'] = "http://127.0.0.1:8000/static/" + course.img
-        temp['stuNum'] = course.stuNum
+        temp['stuNum'] = len(students)
         temp['xueshi'] = course.xueshi
         temp['status'] = course.status
         res.append(temp)
@@ -249,7 +277,8 @@ def listing(request):
         temp['cid'] = course.cid
         temp['cname'] = course.cname
         temp['img'] = "http://127.0.0.1:8000/static/" + course.img
-        temp['stuNum'] = course.stuNum
+        students = sc.objects.filter(cid=course.cid)
+        temp['stuNum'] = len(students)
         temp['xueshi'] = course.xueshi
         temp['status'] = course.status
         if course.status == '进行中':
@@ -277,12 +306,10 @@ def createWork(request):
     work.wid = wid
     work.begin = begin
     work.end = end
+    work.cid = cid
     work.save()
 
-    conn = w_c()
-    conn.cid = cid
-    conn.wid = wid
-    conn.save()
+
 
     #发布给学生
     students = sc.objects.filter(cid=cid)
@@ -294,27 +321,167 @@ def createWork(request):
         ws.save()
 
 
-    res = searchWork(cid)
+    res = searchWork(cid,'all')
 
     return JsonResponse({'status': 'success', 'works': res})
 
+def checking(begin,end):
+    now = datetime.now()
+    begin = datetime.strptime(begin,"%Y-%m-%d %H:%M:%S")
+    end = datetime.strptime(end,"%Y-%m-%d %H:%M:%S")
 
-def searchWork(cid):
-    works = w_c.objects.filter(cid=cid)
+    if now>end:
+        return False
+    else:
+        return True
+
+def searchWork(cid,status):
+
+    works = Work.objects.filter(cid=cid)
     res=[]
+    ings = []
+    eds = []
     for work in works:
         temp={}
-        if work.cid == cid:
-            wid = work.wid
-            ws = Work.objects.filter(wid=wid).first()
-
-            temp['wname'] = ws.wname
-            temp['begin'] = ws.begin
-            temp['end'] = ws.end
-            res.append(temp)
+        temp['wid'] = work.wid
+        temp['wname'] = work.wname
+        temp['begin'] = work.begin
+        temp['end'] = work.end
+        res.append(temp)
+        if checking(work.begin,work.end):
+            ings.append(temp)
+        else:
+            eds.append(temp)
+    if status == 'ing':
+        return  ings
+    elif status == 'ed':
+        return eds
     return res
 
 def showWorks(request):
     cid = request.POST.get('cid')
-    res = searchWork(cid)
+    status = request.POST.get('status')
+    res = searchWork(cid,status)
     return JsonResponse({'status': 'success', 'works': res})
+
+def deleteWork(request):
+    wid = request.POST.get('wid')
+    work = Work.objects.filter(wid = wid).first()
+    cid = work.cid
+    work.delete()
+
+    students = w_s.objects.filter(wid = wid)
+    for student in students:
+        student.delete()
+
+    res = searchWork(cid,'all')
+    return JsonResponse({'status': 'success', 'works': res})
+
+
+def saveq(request):
+    q = question()
+    qid = generate_course_code(20)
+    wid = request.POST.get('wid')
+    info = request.POST.get('info')
+    qname = request.POST.get('qname')
+    q_ans = request.POST.get('ans')
+    kind = request.POST.get('kind')
+    if kind == '1':
+        kind = '单选题'
+        if q_ans == '1':
+            q_ans = 'A'
+        elif q_ans == '2':
+            q_ans = 'B'
+        elif q_ans == '3':
+            q_ans = 'C'
+        else:
+            q_ans = 'D'
+    elif kind == '2':
+        kind = '判断题'
+        if q_ans == '1':
+            q_ans = '正确'
+        else:
+            q_ans = '错误'
+    elif kind == '3':
+        kind = '填空题'
+    else:
+        kind = '简答题'
+    a = request.POST.get('a')
+    b = request.POST.get('b')
+    c = request.POST.get('c')
+    d = request.POST.get('d')
+    q.qid = qid
+    q.wid = wid
+    q.info = info
+    q.qname = qname
+    q.q_ans = q_ans
+    q.kind = kind
+    q.a = a
+    q.b = b
+    q.c = c
+    q.d = d
+    q.save()
+
+    return JsonResponse({'status': 'success'})
+
+def showQuestions(request):
+    wid = request.POST.get('wid')
+    res = searchq(wid)
+    return JsonResponse({'status': 'success', 'qs': res})
+
+def searchq(wid):
+    questions = question.objects.filter(wid=wid)
+    res = []
+    for q in questions:
+        temp = {}
+        temp['qid'] = q.qid
+        temp['qname'] = q.qname
+        temp['info'] = q.info
+        temp['ans'] = q.q_ans
+        temp['kind'] = q.kind
+        temp['a'] = q.a
+        temp['b'] = q.b
+        temp['c'] = q.c
+        temp['d'] = q.d
+        res.append(temp)
+    res.sort(key=lambda x: x['qname'])
+    return res
+
+def deleteq(request):
+    qid = request.POST.get('qid')
+    wid = request.POST.get('wid')
+    print(qid)
+    q = question.objects.filter(qid=qid).first()
+    q.delete()
+
+    res = searchq(wid)
+
+    return JsonResponse({'status': 'success', 'qs': res})
+
+
+def showtotalans(request):
+    wid = request.POST.get('wid')
+    students = w_s.objects.filter(wid=wid)
+    alreadysubmit = 0
+    res=[]
+    for student in students:
+        temp={}
+        if student.status == '已提交':
+            alreadysubmit+=1
+            temp['name'] = student.name
+            temp['t'] = student.t
+            res.append(temp)
+    noal = len(students) - alreadysubmit
+    return JsonResponse({'status': 'success', 'res': res,'al':alreadysubmit,'noal':noal})
+
+def pickCourse(request):
+    cid = request.POST.get('cid')
+    username = request.POST.get('username')
+
+    conn = sc()
+    conn.cid = cid
+    conn.stuName = username
+    conn.save()
+
+    course = searchCourse(cid)
+    return JsonResponse({'status': 'success','course':course})

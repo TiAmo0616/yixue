@@ -35,6 +35,12 @@ urlpatterns = [
     path('listing/',views.listing),
     path('createWork/',views.createWork),
     path('showWorks/',views.showWorks),
+    path('deleteWork/',views.deleteWork),
+    path('saveq/',views.saveq),
+    path('showQuestions/',views.showQuestions),
+    path('deleteq/',views.deleteq),
+    path('showtotalans/',views.showtotalans),
+    path('pickCourse/',views.pickCourse)
 
 
 

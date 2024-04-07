@@ -1,32 +1,37 @@
 # yixue
 
 ##说明
+dnaghanglan.vue导航栏组件√
 
-mainPage.vue首页
+mainPage.vue首页√
 
-login.vue登录界面
+login.vue登录界面√
 
-register.vue 注册界面
+register.vue 注册界面√
 
-userInfo.vue账号管理界面
+userInfo.vue账号管理界面√
 
-myCourse.vue课程具体页面
+myCourse.vue课程具体页面√
 
 teacherPage.vue教师端的我的课堂
 
 studentPage.vue学生端的我的课堂
 
-courses.vue显示所有课程
+courses.vue显示所有课程（无原型图）
 
 singleCourse.vue教师端我的课堂中点击一门课程显示的具体课程页面
 
-homework.vue学生作答页面，页面只显示一题，点击下一题之后跳转
+homework.vue学生作答页面，页面只显示一题，点击下一题之后跳转（无原型图）
 
+setQuestions.vue老师设置题目界面（无原型图）
 
+totalAnswer.vue一门作业对应的学生作答情况（无原型图）
+
+singleAnswer.vue某个学生一门作业的作答情况（无原型图）
 
 ##前端想法
 
-2023.4.5
+2024.4.5
 
 关于teacherPage.vue：
 
@@ -36,6 +41,16 @@ homework.vue学生作答页面，页面只显示一题，点击下一题之后�
 那进行中的样式就和其他两个不一样，
 让用户知道现在显示的是进行中
 
+2024.4.7
+
+关于el-row的样式，基本上都是矩形框，每个矩形框里面是一个作业的信息或者学生提交信息等等。
+可以加个那种 已提交 水印，绿色的那种
+
+因为没有原型图，所以我没有考虑界面设计，只实现交互
+
+比如说mainpage需要点击课程的名字然后跳转到页面，鼠标光标移动到文字上的时候文字要变色
+
+关于myCourse.vue：原本的课程内容部分删掉，可以把简介调整到这部分，页面重新设计一下
 
 ##每日进度
 
@@ -74,3 +89,16 @@ mainpage/login/register的交互基本完成，只需设计界面
 原型图还是要画的尽量详细一点，不然在开发的时候还要考虑界面设计，越写越觉得我们画的原型图好粗糙，很多地方都没有考虑
 
 发布作业的交互基本完成，但是时间不是北京时间，需要调整
+
+2024.4.7
+
+时间问题已经解决，用timedelta手动修改的
+
+教师端设置作业题目已经完成，只能删除和增加，因为修改很麻烦...
+
+每日一吐槽 原型图实在是太粗糙了
+
+~~totalAnswer还没写完，因为学生选课的交互还没搞，先去搞myCourse.vue~~
+
+myCourse.vue 和 courses.vue基本完成
+

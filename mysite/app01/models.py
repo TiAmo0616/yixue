@@ -24,15 +24,11 @@ class Course(models.Model):
     introduction = models.TextField(default='暂无介绍')
     xueshi = models.CharField(max_length=64,default='无')
     img = models.CharField(max_length=64,default='defaultCourse.png')
-    stuNum = models.IntegerField(default=0)
     username = models.CharField(max_length=32,default='')#创建课程的账号
     status = models.CharField(max_length=64,default='进行中')
     # createdate = models.DateField()
 
-class w_c(models.Model):#课程对应的作业
-    cid = models.CharField(max_length=32)
-    wid = models.CharField(max_length=32)
-
+# 学生点击作业的时候再存入数据库
 class s_q(models.Model):#学生对每一道题的解答
     qid = models.CharField(max_length=32)
     name = models.CharField(max_length=32)
@@ -41,35 +37,40 @@ class s_q(models.Model):#学生对每一道题的解答
 class w_s(models.Model):#作业和学生
     wid = models.CharField(max_length=32)
     name = models.CharField(max_length=32)#学生账户名（唯一)
-    t = models.DateTimeField(default=None)#提交时间
+    t = models.CharField(max_length=64)#提交时间
     status = models.CharField(max_length=64,default='未提交')#作业状态
 
 class Work(models.Model):#作业
     wid = models.CharField(max_length=32,primary_key=True)
     wname = models.CharField(max_length=64)
-    begin = models.DateTimeField(default=datetime.now)
-    end = models.DateTimeField(default=datetime.now)
+    # begin = models.DateTimeField(default=datetime.now)
+    # end = models.DateTimeField(default=datetime.now)
+    begin = models.CharField(max_length=64)
+    end = models.CharField(max_length=64)
+    cid = models.CharField(max_length=32,default='')
 
 
-class w_q(models.Model):#作业--题目
-    wid = models.CharField(max_length=32)
-    qid = models.CharField(max_length=32)
+
 
 class question(models.Model):
     qid = models.CharField(max_length=32,primary_key=True)
     qname = models.CharField(max_length=64) #例如：第一题
     info = models.TextField(default='')#题目具体内容
     q_ans = models.TextField(default='')#客观题就直接由系统批改
+    wid = models.CharField(max_length=32,default='')
+    kind = models.CharField(max_length=32,default='')#题目类型
+    a = models.TextField(default='')
+    b = models.TextField(default='')
+    c = models.TextField(default='')
+    d = models.TextField(default='')
 
-class p_c(models.Model):
-    pid = models.CharField(max_length=32)
-    cid = models.CharField(max_length=32)
 
 class problem(models.Model):
     pid = models.CharField(max_length=32, primary_key=True)
     name = models.CharField(max_length=32)#账号名
     info = models.TextField(default='')
-    t = models.DateTimeField(default=datetime.now)
+    # t = models.DateTimeField(default=datetime.now)
+    t = models.CharField(max_length=64)
     status = models.CharField(max_length=64,default='未解决')
     ans = models.TextField(default='')
-
+    cid = models.CharField(max_length=32,default='')

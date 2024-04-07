@@ -9,7 +9,7 @@
         <img :src="course.img" alt="" width="200"/>
               
         {{ course.cname }}
-             
+        课程码{{ this.cid }}     
                 
         学生人数：{{ course.stuNum }}
         学时:{{ course.xueshi }}
@@ -35,6 +35,7 @@
             <button @click="showWork('ed')">已截止</button>
             <button @click="showWork('all')">全部</button>
             <button @click="gotofabu">发布</button>
+            
         </div>
 
         <div>
@@ -44,6 +45,9 @@
                 
                开始时间{{ work.begin }}
                截止时间{{ work.end }}
+               <button @click="deleteWork(work.wid)">删除</button>
+               <button @click="setquestions(work.wid)">设置题目</button>
+               <button @click="see(work.wid)">查看</button>
             </el-row>
         </div>
         <!-- 发布作业 -->
@@ -153,6 +157,7 @@ export default {
   },
   
   methods: {
+    
     workback(){
         this.fabushow = false
         this.new_wname = ''
@@ -167,7 +172,7 @@ export default {
             this.fourthshow = false
         }
         else if(tab.name == 'second'){
-            axios.post("http://127.0.0.1:8000/showWorks/",{'cid':this.cid},{
+            axios.post("http://127.0.0.1:8000/showWorks/",{'cid':this.cid,'status':'all'},{
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -200,14 +205,33 @@ export default {
         }
       },
       showWork(status){
-
+        axios.post("http://127.0.0.1:8000/showWorks/",{'cid':this.cid,'status':status},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                this.works = response.data.works
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
       },
     gotofabu(){
         this.fabushow = true
       },
     submitfabu(){
-        console.log(this.new_wname)
-        axios.post("http://127.0.0.1:8000/createWork/",{'cid':this.cid,'wname':this.new_wname,'begin':this.newbegin,'end':this.newend},{
+        var moment = require('moment')
+        let g = moment.utc(this.newbegin).toDate()
+        let t = moment(g).format('YYYY-MM-DD HH:mm:ss')
+        let eg = moment.utc(this.newend).toDate()
+        let et = moment(eg).format('YYYY-MM-DD HH:mm:ss')
+
+        axios.post("http://127.0.0.1:8000/createWork/",{'cid':this.cid,'wname':this.new_wname,'begin':t,'end':et},{
         headers: {
             'Content-Type': 'multipart/form-data'
         }
@@ -226,7 +250,29 @@ export default {
         .catch(error => {
             console.error('Error:', error);
         });
-        }
+        },
+    deleteWork(wid){
+        axios.post("http://127.0.0.1:8000/deleteWork/",{'wid':wid},{
+        headers: {'Content-Type': 'multipart/form-data'}
+    })
+        .then(response =>{
+            console.log(response.data)
+            if(response.data.status == 'success'){
+                this.works = response.data.works
+                alert("删除成功!")
+            }
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    },
+    setquestions(wid){
+        this.$router.push({ name: 'setquestions' ,params:{"wid":wid,'cid':this.cid}})
+    },
+    see(wid){
+        this.$router.push({ name: 'totalAnswer' ,params:{"wid":wid,'cid':this.cid}})
+    }
     }
 }
 </script>

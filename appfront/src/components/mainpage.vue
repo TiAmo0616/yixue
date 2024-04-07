@@ -12,14 +12,15 @@
   <div>
     <div>
       课程精选
+      <button @click="seeall">查看全部</button>
     </div>
     <div>
       <el-row :gutter="20">
         <el-col v-for="course in courses" :key="course.cid" :span="6">
           <div class="course-card">
-            <img :src="course.img" alt="" width="200"/>
+            <img :src="course.img" alt="" width="200" height="150"/>
             <div class="course-info">
-              <h3>{{ course.cname }}</h3>
+              <h3 @click="see(course.cid)">{{ course.cname }}</h3>
               <h4>{{ course.teacher }}|{{ course.status }}</h4>
             </div>
           </div>
@@ -81,7 +82,12 @@ export default {
     }
   },
   methods:{
-   
+   see(cid){
+    this.$router.push({ name: 'myCourse' ,params:{'cid':cid}})
+   },
+   seeall(){
+    this.$router.push({ name: 'courses'})
+   }
   }
 }
 </script>
