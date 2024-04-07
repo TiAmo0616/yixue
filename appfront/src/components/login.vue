@@ -30,14 +30,14 @@ export default {
   },
   methods:{
     login(){
-        axios.post("http://127.0.0.1:8000/login/",{'username':this.username,'password':this.password},{
+        axios.post("http://127.0.0.1:8000/login/",{username:this.username,password:this.password},{
         headers: {'Content-Type': 'multipart/form-data'}
     })
         .then(response =>{
             console.log(response.data)
             if(response.data.status == 'success'){
                 const role = response.data.role
-                this.$store.commit('login',this.username,role);
+                this.$store.commit('login',{username:this.username,role:role});
                 this.$router.push({ name: 'mainpage' ,params:{"username":this.username,'role':role}});
             }
             else if(response.data.status == 'unmatch'){alert("用户名密码错误！")}

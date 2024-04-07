@@ -52,7 +52,8 @@ singleAnswer.vue某个学生一门作业的作答情况（无原型图）
 
 关于myCourse.vue：原本的课程内容部分删掉，可以把简介调整到这部分，页面重新设计一下
 
-##每日进度
+其实有一些模块是差不多的，比如说studentPage和teacherPage，只是有很小的区别，可以考虑把相同的部分抽出来单独作为一个组件，这样写起来会方便清晰一点，但是我暂时没有这样做，考虑到交互问题，设计页面的时候可以考虑一下
+##每日进度（碎碎念？）
 
 2024.3.30
 
@@ -101,4 +102,10 @@ mainpage/login/register的交互基本完成，只需设计界面
 ~~totalAnswer还没写完，因为学生选课的交互还没搞，先去搞myCourse.vue~~
 
 myCourse.vue 和 courses.vue基本完成
+
+看后端代码，发现冗余代码很多，导致整体很杂乱，work之后的函数在写的时候规避了冗余，之前关于course的代码很冗余，有空再来优美一下代码吧
+
+导航栏写错了，牵一发而动全身......虽然搞好了，但我并不能理解，明明按教程写的但是username和role就是传不进去，最后居然是用username.username和username.role来获取全局的username和role，好离谱.....
+
+正在写studentPage，加载课程和退课完成了
 

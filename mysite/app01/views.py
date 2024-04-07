@@ -485,3 +485,40 @@ def pickCourse(request):
 
     course = searchCourse(cid)
     return JsonResponse({'status': 'success','course':course})
+
+
+def studentCourses(request):
+    username = request.POST.get('username')
+    courses = sc.objects.filter(stuName=username)
+    res=[]
+    for i in courses:
+        course = Course.objects.filter(cid = i.cid).first()
+        temp = {}
+        temp['cid'] = course.cid
+        temp['cname'] = course.cname
+        temp['img'] = "http://127.0.0.1:8000/static/"+ course.img
+        temp['xueshi'] = course.xueshi
+        temp['status'] = course.status
+        res.append(temp)
+    return JsonResponse({'status': 'success', 'courses': res})
+
+def exitCourse(request):
+    username = request.POST.get('username')
+    cid = request.POST.get('cid')
+    conn = sc.objects.filter(stuName = username)
+    for con in conn:
+        if con.cid == cid:
+            con.delete()
+            break
+    courses = sc.objects.filter(stuName=username)
+    res = []
+    for i in courses:
+        course = Course.objects.filter(cid=i.cid).first()
+        temp = {}
+        temp['cid'] = course.cid
+        temp['cname'] = course.cname
+        temp['img'] = "http://127.0.0.1:8000/static/" + course.img
+        temp['xueshi'] = course.xueshi
+        temp['status'] = course.status
+        res.append(temp)
+    return JsonResponse({'status': 'success', 'courses': res})

@@ -2,7 +2,7 @@
 <div>
   <!-- 导航栏 -->
   <div>
-    <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
+    <Daohanglan :isLoggedIn="isLoggedIn" :user="username"></Daohanglan>
   </div>
   <!-- 图片滑动 -->
   <div>
@@ -52,6 +52,7 @@ export default {
     }
   },
   created(){
+    console.log(this.role)
     axios.post("http://127.0.0.1:8000/listCourses/",{
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -75,10 +76,10 @@ export default {
       return this.$store.state.isLoggedIn;
     },
     username() {
-      return this.$store.state.username;
+      return this.$store.state.username.username;
     },
     role() {
-      return this.$store.state.role;
+      return this.$store.state.username.role;
     }
   },
   methods:{

@@ -5,7 +5,7 @@
             <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal">
               <el-menu-item index="1" @click="enterClass">我的课堂</el-menu-item>
               <el-submenu index="2">
-                    <template slot="title">{{ username }}</template>
+                    <template slot="title">{{ username }}|{{ role }}</template>
                     <el-menu-item index="2-1" @click="editProfile">账号管理</el-menu-item>
                     <el-menu-item index="2-2" @click="logout">退出登录</el-menu-item>
                 </el-submenu>
@@ -14,7 +14,7 @@
         <div v-else>
           <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal">
               <el-menu-item index="1" @click="login">我的课堂</el-menu-item>
-              <el-menu-item index="1" @click="login">登录|注册</el-menu-item>
+              <el-menu-item index="2" @click="login">登录|注册</el-menu-item>
             </el-menu>
         </div>
         
@@ -31,7 +31,7 @@ export default {
   data () {
     return {
       logo,
-      isloged:false
+      activeIndex: '',
     }
   },
   computed: {
@@ -39,10 +39,10 @@ export default {
       return this.$store.state.isLoggedIn;
     },
     username() {
-      return this.$store.state.username;
+      return this.$store.state.username.username;
     },
     role() {
-      return this.$store.state.role;
+      return this.$store.state.username.role;
     }
   },
   methods:{
@@ -57,6 +57,7 @@ export default {
         this.$router.push({ name: 'login' })
     },
     enterClass(){
+      console.log(this.role)
       if(this.role == '学生'){this.$router.push({ name: 'studentPage' })}
       else{this.$router.push({ name: 'teacherPage' })}
     },

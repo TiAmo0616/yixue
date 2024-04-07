@@ -35,14 +35,14 @@ export default {
   computed: {
     isLoggedIn() {
       return this.$store.state.isLoggedIn;
-        },
+    },
     username() {
-      return this.$store.state.username;
+      return this.$store.state.username.username;
     },
     role() {
-      return this.$store.state.role;
-    },
-},
+      return this.$store.state.username.role;
+    }
+  },
   data () {
     return {
       works:[],

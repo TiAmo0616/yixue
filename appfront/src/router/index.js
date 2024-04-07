@@ -18,16 +18,19 @@ Vue.use(Vuex);
 const state = {
   isLoggedIn: false,
   username:'',
-  role:''
+  role:'',
 }
 const mutations= {
-  login(state,username,role) {
+  login(state,user) {
+    
     state.isLoggedIn = true;
-    state.username = username;
-    state.role = role
+    state.username = user.username
+    state.role = user.role
+    
   },
-  logout(state,username,role) {
+  logout(state) {
     state.isLoggedIn = false;
+    
     state.username = '';
     state.role = ''
   }
@@ -37,7 +40,7 @@ var store = new Vuex.Store({
   state,
   mutations
 })
-
+ 
 export default new Router({
   routes: [
     {

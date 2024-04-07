@@ -60,14 +60,14 @@ export default {
   computed: {
     isLoggedIn() {
       return this.$store.state.isLoggedIn;
-        },
+    },
     username() {
-      return this.$store.state.username;
+      return this.$store.state.username.username;
     },
     role() {
-      return this.$store.state.role;
-    },
-},
+      return this.$store.state.username.role;
+    }
+  },
   created(){
     axios.post("http://127.0.0.1:8000/showCourse/",{'cid':this.cid,'username':this.username},{
       headers: {

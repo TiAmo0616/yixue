@@ -40,7 +40,9 @@ urlpatterns = [
     path('showQuestions/',views.showQuestions),
     path('deleteq/',views.deleteq),
     path('showtotalans/',views.showtotalans),
-    path('pickCourse/',views.pickCourse)
+    path('pickCourse/',views.pickCourse),
+    path('studentCourse/',views.studentCourses),
+    path('exitCourse/',views.exitCourse)
 
 
 
