@@ -3,6 +3,7 @@
         <!-- 说明：通过isLoggedIn区分已登录导航栏和未登录导航栏的差别，对应不同的内容，以下是示例 -->
         <div  v-if="isLoggedIn">
             <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal">
+              <el-menu-item index="3" @click="backToMain">首页</el-menu-item>
               <el-menu-item index="1" @click="enterClass">我的课堂</el-menu-item>
               <el-submenu index="2">
                     <template slot="title">{{ username }}|{{ role }}</template>
@@ -13,6 +14,7 @@
         </div>
         <div v-else>
           <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal">
+            <el-menu-item index="3"  @click="backToMain">首页</el-menu-item>
               <el-menu-item index="1" @click="login">我的课堂</el-menu-item>
               <el-menu-item index="2" @click="login">登录|注册</el-menu-item>
             </el-menu>
@@ -61,7 +63,9 @@ export default {
       if(this.role == '学生'){this.$router.push({ name: 'studentPage' })}
       else{this.$router.push({ name: 'teacherPage' })}
     },
-
+    backToMain(){
+      this.$router.push({ name: 'mainpage'});
+    }
   }
 }
 </script>

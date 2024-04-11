@@ -19,9 +19,14 @@
                         <el-radio :label="4">简答题</el-radio>
                     </el-radio-group>
                 </div>  
-
+               
                 <!-- 不同类型的设置方式不一样 -->
                 <div v-show="v1">
+                   <!-- 设置分数 -->
+                  <div>
+                    请设置本题分数：
+                    <input type="text" v-model="qscore" required>  
+                  </div>
                     <div class="form-group">  
                         <label for="qname">题号</label>  
                         <input type="textarea" id="qname" v-model="qname" required>  
@@ -48,6 +53,11 @@
                     </div>
                 </div>
                 <div v-show="v2">
+                   <!-- 设置分数 -->
+                  <div>
+                    请设置本题分数：
+                    <input type="text" v-model="qscore" required>  
+                  </div>
                     <div class="form-group">  
                         <label for="qname">题号</label>  
                         <input type="textarea" id="qname" v-model="qname" required>  
@@ -66,6 +76,11 @@
 
                 </div>
                 <div v-show="v4">
+                   <!-- 设置分数 -->
+                  <div>
+                    请设置本题分数：
+                    <input type="text" v-model="qscore" required>  
+                  </div>
                     <div class="form-group">  
                         <label for="qname">题号</label>  
                         <input type="textarea" id="qname" v-model="qname" required>  
@@ -173,7 +188,7 @@ export default {
       bq:'',
       cq:'',
       dq:'',
-
+      qscore:''
 
     }
   },
@@ -217,7 +232,7 @@ export default {
     saveq(){
         console.log(this.kind)
         axios.post("http://127.0.0.1:8000/saveq/",
-        {'wid':this.wid,'qname':this.qname,'info':this.info,'ans':this.ans,'kind':this.kind,'a':this.aq,'b':this.bq,'c':this.cq,'d':this.dq
+        {'wid':this.wid,'qname':this.qname,'info':this.info,'ans':this.ans,'kind':this.kind,'a':this.aq,'b':this.bq,'c':this.cq,'d':this.dq,'score':this.qscore
     },{
       headers: {
         'Content-Type': 'multipart/form-data'

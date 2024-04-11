@@ -71,6 +71,25 @@ export default {
       });
   },
   methods:{
+    listing(s){
+      axios.post("http://127.0.0.1:8000/listMyCourses/",{'username':this.username,'s':s},{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        if(response.data.status == 'success'){
+          this.courses = response.data.courses
+        }
+         
+      })
+      .catch(error => {
+        
+        console.error('Error:', error);
+      });
+      
+    },
     exitCourse(cid){
       axios.post("http://127.0.0.1:8000/exitCourse/",{'username':this.username,'cid':cid},{
       headers: {
@@ -89,6 +108,9 @@ export default {
         
         console.error('Error:', error);
       });
+    },
+    enter(cid){
+      this.$router.push({ name: 'studentCourse' ,params:{"cid":cid}})
     }
   }
 }

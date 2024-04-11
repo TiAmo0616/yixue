@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime, timedelta
 
@@ -19,6 +20,8 @@ from app01.models import sc
 from app01.models import w_s
 
 from app01.models import question
+
+from app01.models import s_q
 
 
 def generate_course_code(index):
@@ -309,16 +312,16 @@ def createWork(request):
     work.cid = cid
     work.save()
 
-
-
-    #发布给学生
-    students = sc.objects.filter(cid=cid)
-    for student in students:
-        name = student.stuName
-        ws= w_s()
-        ws.wid = wid
-        ws.name = name
-        ws.save()
+    #
+    #
+    # #发布给学生
+    # students = sc.objects.filter(cid=cid)
+    # for student in students:
+    #     name = student.stuName
+    #     ws= w_s()
+    #     ws.wid = wid
+    #     ws.name = name
+    #     ws.save()
 
 
     res = searchWork(cid,'all')
@@ -386,6 +389,7 @@ def saveq(request):
     qname = request.POST.get('qname')
     q_ans = request.POST.get('ans')
     kind = request.POST.get('kind')
+    score = request.POST.get('score')
     if kind == '1':
         kind = '单选题'
         if q_ans == '1':
@@ -420,6 +424,7 @@ def saveq(request):
     q.b = b
     q.c = c
     q.d = d
+    q.score = score
     q.save()
 
     return JsonResponse({'status': 'success'})
@@ -443,6 +448,7 @@ def searchq(wid):
         temp['b'] = q.b
         temp['c'] = q.c
         temp['d'] = q.d
+        temp['score'] = q.score
         res.append(temp)
     res.sort(key=lambda x: x['qname'])
     return res
@@ -522,3 +528,65 @@ def exitCourse(request):
         temp['status'] = course.status
         res.append(temp)
     return JsonResponse({'status': 'success', 'courses': res})
+
+def listMyCourses(request):
+    username = request.POST.get('username')
+    s = request.POST.get('s')
+    cids = sc.objects.filter(stuName=username)
+    res = []
+    ing = []
+    finish = []
+    for cid in cids:
+        course = Course.objects.filter(cid = cid.cid).first()
+        temp = {}
+        temp['cid'] = course.cid
+        temp['cname'] = course.cname
+        temp['img'] = "http://127.0.0.1:8000/static/" + course.img
+        temp['xueshi'] = course.xueshi
+        temp['status'] = course.status
+        if course.status == '进行中':
+            ing.append(temp)
+            res.append(temp)
+        else:
+            finish.append(temp)
+            res.append(temp)
+    if s == '进行中':
+        return JsonResponse({'status': 'success', 'courses': ing})
+    elif s == '已结束':
+        return JsonResponse({'status': 'success', 'courses': finish})
+    else:
+        return JsonResponse({'status': 'success', 'courses': res})
+
+def saveWork(request):
+    wid = request.POST.get('wid')
+    answers = request.POST.get('answers')
+    name = request.POST.get('name')
+    answers = json.loads(answers)
+    for qid in answers:
+
+        qs = s_q()
+        qs.qid = qid
+        ans = answers[qid]
+        if ans == '1':
+            ans = 'A'
+        elif ans == '2':
+            ans = 'B'
+        elif ans=='3':
+            ans = 'C'
+        elif ans == '4':
+            ans = 'D'
+        elif ans == 5:
+            ans='正确'
+        elif ans == 6:
+            ans='错误'
+        else:
+            ans = ans
+        qs.ans = ans
+        qs.name = name
+        qs.save()
+    ws = w_s()
+    ws.wid = wid
+    ws.name = name
+    ws.t = datetime.now().strftime("%Y-%m-%d %H:%M")
+    ws.save()
+    return JsonResponse({'status': 'success'})
