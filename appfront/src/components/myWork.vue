@@ -1,7 +1,7 @@
 <template>
     <div>
-         <!-- 导航栏 -->
-         <div>
+        <!-- 导航栏 -->
+        <div>
             <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
         </div>
         <!-- 返回 -->
@@ -9,7 +9,10 @@
             <el-page-header @back="goBack">
             </el-page-header>
         </div>
-        <!-- 显示所有题目 -->
+        <!-- 学生信息 -->
+        <div>
+            我的答卷：
+        </div>
         <div>
             <el-row v-for="question in questions" :key="question.qid">
                 <div v-if="question.kind == '单选题'">
@@ -19,13 +22,16 @@
                     <br>
                     {{ question.info }}
                     <br>
-                    <el-radio-group v-model="answers[question.qid]"  
-        @input="updateInputAnswer(question.kind,question.qid, $event.target.value)"  >
+                    <el-radio-group v-model="answers[question.qid]"  :disabled="true" >
                         <el-radio :label="1">A.{{ question.a }}</el-radio>
                         <el-radio :label="2">B.{{ question.b }}</el-radio>
                         <el-radio :label="3">C.{{ question.c }}</el-radio>
                         <el-radio :label="4">D.{{ question.d }}</el-radio>
                     </el-radio-group>
+                    <div>
+                        得分：
+                        {{ question.score }}
+                    </div>
                 </div>
 
                 <div v-else-if="question.kind == '判断题'">
@@ -35,11 +41,14 @@
                     <br>
                     {{ question.info }}
                     <br>
-                    <el-radio-group v-model="answers[question.qid]"  
-        @input="updateInputAnswer(question.kind,question.qid, $event.target.value)">
+                    <el-radio-group v-model="answers[question.qid]"  :disabled="true">
                         <el-radio :label="5">正确</el-radio>
                         <el-radio :label="6">错误</el-radio>
                     </el-radio-group>
+                    <div>
+                        得分：
+                        {{ question.score }}
+                    </div>
                 </div>
                 
                 <div v-else-if="question.kind =='填空题'">
@@ -49,12 +58,29 @@
                     <br>
                     {{ question.info }}
 
-                    <el-input placeholder="请输入内容"
+                    <el-input
                     v-model="answers[question.qid]"  
-        @input="updateInputAnswer(question.kind,question.qid, $event.target.value)"
-                    clearable>
+                    clearable
+                    :disabled="true">
                     </el-input>
 
+                    <div>
+                        得分:
+                        <el-input 
+                            v-model="scores[question.qid]" 
+                            :disabled="true" 
+                            clearable>
+                            </el-input>
+                        点评：
+                        <el-input 
+                        :disabled="true"
+                        type="textarea"
+                        :rows="5"
+                        v-model="judgements[question.qid]"  
+                        clearable>
+                        </el-input>
+
+                    </div>
                 </div>
                <div v-else>
                 ({{ question.score }}分)
@@ -68,14 +94,30 @@
                 :rows="5"
                 placeholder="请输入内容"
                 v-model="answers[question.qid]"  
-        @input="updateInputAnswer(question.kind,question.qid, $event.target.value)"  ></el-input>
                 
+                :disabled="true"></el-input>
+                
+                <div>
+                    得分:
+                    <el-input 
+                        v-model="scores[question.qid]"  
+                        :disabled="true"
+                        clearable>
+                        </el-input>
+                    点评：
+                    <el-input 
+                    type="textarea"
+                    :rows="5"
+                    v-model="judgements[question.qid]"  
+                    :disabled="true"
+                    clearable>
+                    </el-input>
+                </div>
                </div>
-
+               
            </el-row>
+           <button @click="back">返回</button>
         </div>
-    <!-- 提交 -->
-    <button @click="submitAnswers">提交</button>
     </div>
 
 </template>
@@ -84,7 +126,7 @@
 import axios from 'axios'
 import Daohanglan from './daohanglan.vue';
 export default {
-  name: 'homework',
+  name: 'myWork',
   props: ['wid','cid'],
   components:{
     Daohanglan,
@@ -102,16 +144,14 @@ export default {
   },
   data () {
     return {
-      questions:[],
+        questions:[],
       answers:{},
-      ans:'',
-      input:'',
-      textarea:'',
+      scores:{},
+      judgements:{},
     }
   },
   created(){
-    axios.post("http://127.0.0.1:8000/showQuestions/",
-        {'wid':this.wid},{
+    axios.post("http://127.0.0.1:8000/seeStudentWork/",{'wid':this.wid,'name':this.username},{
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -119,7 +159,10 @@ export default {
       .then(response =>{
         console.log(response.data)
         if(response.data.status == 'success'){
-          this.questions = response.data.qs
+          this.questions = response.data.works
+          this.answers = response.data.answers
+          this.scores = response.data.scores
+          this.judgements = response.data.judgements
         }
          
       })
@@ -128,53 +171,8 @@ export default {
       });
   },
   methods:{
-    updateInputAnswer(kind,qid, value) {
-        this.answers[qid] = value;
-        // console.log(kind)
-        // if(kind == '单选题'){
-        //     if(value == 1){
-        //         this.answers[qid] = 'A'
-        //     }
-        //     else if(value == 2){
-        //         this.answers[qid] = 'B'
-        //     }
-        //     else if (value == 3){
-        //         this.answers[qid] = 'C'
-        //     }
-        //     else{
-        //         this.answers[qid] = 'D'
-        //     }
-        // }
-        // else if(kind=='判断题'){
-        //     if(value == 1){
-        //         this.answers[qid] = '正确'
-        //     }
-        //     else{
-        //         this.answers[qid] = '错误'
-        //     }
-        // }
-        // else{
-        //     this.answers[qid] = value;
-        // }
-      
-    },
-    submitAnswers(){
-        console.log(this.answers)
-        const jsonData = JSON.stringify(this.answers);
-        axios.post("http://127.0.0.1:8000/saveWork/",
-        {'wid':this.wid,'answers':jsonData,'name':this.username},{
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-  })
-      .then(response =>{
-        console.log(response.data)
-        alert('您已成功提交！')
-        this.$router.push({ name: 'studentCourse' ,params:{'cid':this.cid}})
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
+    back(){
+        this.$router.push({ name: 'studentCourse' ,params:{'cid':this.cid,'wid':this.wid}})
     },
     goBack(){
         this.$router.push({ name: 'studentCourse' ,params:{'cid':this.cid,'wid':this.wid}})

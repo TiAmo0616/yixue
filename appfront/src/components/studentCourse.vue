@@ -21,7 +21,6 @@
             <el-tab-pane label="学习资源" name="first">学习资源</el-tab-pane>
             <el-tab-pane label="作业" name="second">作业</el-tab-pane>
             <el-tab-pane label="问答" name="third">问答</el-tab-pane>
-            <el-tab-pane label="学生管理" name="fourth">学生管理</el-tab-pane>
         </el-tabs>
     </div>
     <!-- 学习资源（录播课程） -->
@@ -38,10 +37,19 @@
 
         <div>
             <el-row v-for="work in works" :key="work.wid">  
+                {{ work.wid }}
+                
                 {{ work.wname }}    
                开始时间{{ work.begin }}
                截止时间{{ work.end }}
-               <button @click="write(work.wid)">去完成</button>
+               <div v-if="wids.includes(work.wid)">
+                {{statuses[work.wid]}}
+                <button @click="see(work.wid)">查看</button>
+               </div>
+               <div v-else>
+                <button @click="write(work.wid)">去完成</button>
+               </div>
+               
             </el-row>
         </div>
      </div>
@@ -73,6 +81,9 @@ export default {
     return {
       course:'',
       works:[],
+      wids:[],
+      statuses:{},
+
     }
   },
   created(){
@@ -106,21 +117,23 @@ export default {
             this.fourthshow = false
         }
         else if(tab.name == 'second'){
-            axios.post("http://127.0.0.1:8000/showWorks/",{'cid':this.cid,'status':'all'},{
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-            .then(response =>{
-                console.log(response.data)
-                if(response.data.status == 'success'){
-                this.works = response.data.works
-                }
+            this.showWork('all')
+        //     axios.post("http://127.0.0.1:8000/studentWorks/",{'cid':this.cid,'status':'all','username':this.username},{
+        //     headers: {
+        //         'Content-Type': 'multipart/form-data'
+        //     }
+        // })
+        //     .then(response =>{
+        //         console.log(response.data)
+        //         if(response.data.status == 'success'){
+        //         this.works = response.data.works
+        //         this.wids = response.data.wids
+        //         }
                 
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+        //     })
+        //     .catch(error => {
+        //         console.error('Error:', error);
+        //     });
             this.firstshow = false
             this.sencondshow = true
             this.thirdshow = false
@@ -138,6 +151,29 @@ export default {
             this.fourthshow = true
         }
       },
+      showWork(status){
+        axios.post("http://127.0.0.1:8000/studentWorks/",{'cid':this.cid,'status':status,'username':this.username},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                this.works = response.data.works
+                this.wids = response.data.wids
+                this.statuses = response.data.statuses
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+      },
+      
+        see(wid){
+      this.$router.push({ name: 'myWork' ,params:{"wid":wid,'cid':this.cid}})
+      }
   }
 }
 </script>

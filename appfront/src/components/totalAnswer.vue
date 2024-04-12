@@ -12,11 +12,19 @@
         <!-- 展示已经交的作业 -->
         <div>
             <el-row v-for="work in works" :key="work.name">
-               
-                {{ work.name }}
-                
+               姓名：
+                {{ work.username }}
+                <br>
                提交时间{{ work.t}}
-               <button @click="see(work.wid)">查看</button>
+               <div v-if="work.status == '待批改'">
+                <button @click="see(work.username,work.status)">去批改</button>
+               </div>
+               <div v-else>
+                  已批改
+                  <button @click="see(work.username,work.status)">查看</button>
+               </div>
+
+              
             </el-row>
         </div>
     </div>
@@ -51,7 +59,7 @@ export default {
     }
   },
   created(){
-    axios.post("http://127.0.0.1:8000/showtotalans/",{'wid':this.wid},{
+    axios.post("http://127.0.0.1:8000/showtotalans/",{'wid':this.wid,'cid':this.cid},{
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -70,7 +78,9 @@ export default {
       });
   },
   methods:{
-
+    see(name,status){
+      this.$router.push({ name: 'judgeWork' ,params:{"wid":this.wid,'cid':this.cid,'name':name,'status':status}})
+    }
   }
 }
 </script>

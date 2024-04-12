@@ -15,7 +15,8 @@ import totalAnswer from '@/components/totalAnswer'
 import courses from '@/components/courses'
 import homework from '@/components/homework'
 import studentCourse from '@/components/studentCourse'
-
+import judgeWork from '@/components/judgeWork'
+import myWork from '@/components/myWork'
 Vue.use(Router)
 Vue.use(Vuex);
 const state = {
@@ -126,6 +127,18 @@ export default new Router({
       name: 'homework',
       component: homework,
       props: true
-    }
+    },
+    {
+      path: '/judgeWork',
+      name: 'judgeWork',
+      component: judgeWork,
+      props: true
+    },
+    {
+      path: '/myWork',
+      name: 'myWork',
+      component: myWork,
+      props: true
+    },
   ]
 })

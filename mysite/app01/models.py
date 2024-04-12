@@ -40,7 +40,7 @@ class w_s(models.Model):#作业和学生
     wid = models.CharField(max_length=32)
     name = models.CharField(max_length=32)#学生账户名（唯一)
     t = models.CharField(max_length=64)#提交时间
-
+    status = models.CharField(max_length=64,default='待批改')
 
 class Work(models.Model):#作业
     wid = models.CharField(max_length=32,primary_key=True)

@@ -467,17 +467,18 @@ def deleteq(request):
 
 def showtotalans(request):
     wid = request.POST.get('wid')
-    students = w_s.objects.filter(wid=wid)
-    alreadysubmit = 0
+    cid = request.POST.get('cid')
+    submitstudents = w_s.objects.filter(wid=wid)
+    totalstudents =sc.objects.filter(cid=cid)
+    alreadysubmit = len(submitstudents)
+    noal = len(totalstudents)-alreadysubmit
     res=[]
-    for student in students:
+    for ws in submitstudents:
         temp={}
-        if student.status == '已提交':
-            alreadysubmit+=1
-            temp['name'] = student.name
-            temp['t'] = student.t
-            res.append(temp)
-    noal = len(students) - alreadysubmit
+        temp['username'] = ws.name
+        temp['t'] = ws.t
+        temp['status'] = ws.status
+        res.append(temp)
     return JsonResponse({'status': 'success', 'res': res,'al':alreadysubmit,'noal':noal})
 
 def pickCourse(request):
@@ -567,18 +568,45 @@ def saveWork(request):
         qs = s_q()
         qs.qid = qid
         ans = answers[qid]
-        if ans == '1':
+        q = question.objects.filter(qid=qid).first()
+        trueans = q.q_ans
+        score = q.score
+        if ans == 1:
             ans = 'A'
-        elif ans == '2':
+            if ans==trueans:
+                qs.score=score
+            else:
+                qs.score='0'
+        elif ans == 2:
             ans = 'B'
-        elif ans=='3':
+            if ans==trueans:
+                qs.score=score
+            else:
+                qs.score='0'
+        elif ans==3:
             ans = 'C'
-        elif ans == '4':
+            if ans==trueans:
+                qs.score=score
+            else:
+                qs.score='0'
+        elif ans == 4:
             ans = 'D'
+            if ans==trueans:
+                qs.score=score
+            else:
+                qs.score='0'
         elif ans == 5:
             ans='正确'
+            if ans==trueans:
+                qs.score=score
+            else:
+                qs.score='0'
         elif ans == 6:
             ans='错误'
+            if ans==trueans:
+                qs.score=score
+            else:
+                qs.score='0'
         else:
             ans = ans
         qs.ans = ans
@@ -588,5 +616,88 @@ def saveWork(request):
     ws.wid = wid
     ws.name = name
     ws.t = datetime.now().strftime("%Y-%m-%d %H:%M")
+    ws.save()
+    return JsonResponse({'status': 'success'})
+
+
+def studentWorks(request):
+    username = request.POST.get('username')
+    cid = request.POST.get('cid')
+    status = request.POST.get('status')
+    res = searchWork(cid,status)
+    wss = w_s.objects.filter(name=username)
+    wids=[]
+    status={}
+    for ws in wss:
+        wids.append(ws.wid)
+        status[ws.wid] = ws.status
+    return JsonResponse({'status': 'success', 'works': res,'wids':wids,'statuses':status})
+
+def seeStudentWork(request):
+    wid = request.POST.get('wid')
+    name = request.POST.get('name')
+    ws = w_s.objects.filter(wid=wid,name=name).first()
+    qss = question.objects.filter(wid=wid)
+    res=[]
+    answers={}
+    scores={}
+    judgements={}
+    for qs in qss:
+        temp={}
+        qid = qs.qid
+        temp['qid'] = qid
+        temp['qname'] = qs.qname
+        temp['info'] = qs.info
+        temp['ans'] = qs.q_ans
+        temp['kind'] = qs.kind
+        temp['a'] = qs.a
+        temp['b'] = qs.b
+        temp['c'] = qs.c
+        temp['d'] = qs.d
+        temp['score'] = qs.score
+        userans = s_q.objects.filter(qid=qid,name=name).first()
+        ans = A21(userans.ans)
+        temp['myans'] = ans
+
+        answers[qid] = ans
+        if ws.status == '已批改':
+            scores[qid] = userans.score
+            judgements[qid] = userans.judgement
+        res.append(temp)
+    res.sort(key=lambda x:x['qname'])
+    return JsonResponse({'status': 'success', 'works': res,'answers':answers,'scores':scores,'judgements':judgements})
+
+def A21(ans):
+    if ans == 'A':
+        ans=1
+    elif ans == 'B':
+        ans=2
+    elif ans=='C':
+        ans=3
+    elif ans=='D':
+        ans=4
+    elif ans=='正确':
+        ans=5
+    elif ans=='错误':
+        ans=6
+    else:
+        ans=ans
+    return ans
+
+def saveCheck(request):
+    wid = request.POST.get('wid')
+    name = request.POST.get('name')
+    scoredata = request.POST.get('scores')
+    scoredata = json.loads(scoredata)
+    judgedata = request.POST.get('judges')
+    judgedata = json.loads(judgedata)
+    for qid in scoredata:
+        qs = s_q.objects.filter(qid=qid,name=name).first()
+        qs.score = scoredata[qid]
+        if qid in judgedata:
+            qs.judgement = judgedata[qid]
+        qs.save()
+    ws = w_s.objects.filter(wid=wid,name=name).first()
+    ws.status = '已批改'
     ws.save()
     return JsonResponse({'status': 'success'})
