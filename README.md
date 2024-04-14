@@ -21,7 +21,7 @@ courses.vue显示所有课程（无原型图）
 
 singleCourse.vue教师端我的课堂中点击一门课程显示的具体课程页面
 
-homework.vue学生作答页面，页面只显示一题，点击下一题之后跳转（无原型图）
+homework.vue学生作答页面（无原型图）
 
 setQuestions.vue老师设置题目界面（无原型图）
 
