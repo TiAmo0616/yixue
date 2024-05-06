@@ -48,5 +48,7 @@ urlpatterns = [
     path('studentWorks/',views.studentWorks),
     path('seeStudentWork/',views.seeStudentWork),
     path('saveCheck/',views.saveCheck),
+    path('showProblems/',views.showProblems),
+    path('saveProblems/',views.saveProblems),
 
 ]

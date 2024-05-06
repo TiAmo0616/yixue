@@ -77,3 +77,4 @@ class problem(models.Model):
     status = models.CharField(max_length=64,default='未解决')
     ans = models.TextField(default='')
     cid = models.CharField(max_length=32,default='')
+    jh = models.CharField(max_length=32,default='0')

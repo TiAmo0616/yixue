@@ -23,6 +23,8 @@ from app01.models import question
 
 from app01.models import s_q
 
+from app01.models import problem
+
 
 def generate_course_code(index):
     course_code = str(uuid.uuid4().hex)[:index]  # 生成一个32位的UUID，并截取前8位作为课程码
@@ -701,3 +703,52 @@ def saveCheck(request):
     ws.status = '已批改'
     ws.save()
     return JsonResponse({'status': 'success'})
+
+def searchProblems(cid,status,username):
+
+    problems = problem.objects.filter(cid=cid)
+    res=[]
+    mys = []
+    jhs = []
+    for p in problems:
+        temp={}
+        temp['pid'] = p.pid
+        temp['askername'] = p.name
+        temp['t'] = p.t
+        temp['status'] = p.status
+        temp['ans'] = p.ans
+        temp['pinfo'] = p.info
+        res.append(temp)
+        if p.name == username:
+            mys.append(temp)
+        if p.jh == '1':
+            jhs.append(temp)
+
+    if status == 'my':
+        return  mys
+    elif status == 'jh':
+        return jhs
+    return res
+
+def showProblems(request):
+    username = request.POST.get('username')
+    cid = request.POST.get('cid')
+    status = request.POST.get('status')
+    problems = searchProblems(cid,status,username)
+    return JsonResponse({'status': 'success', 'problems':problems})
+
+def saveProblems(request):
+    username = request.POST.get('username')
+    cid = request.POST.get('cid')
+    info = request.POST.get('info')
+    pid = generate_course_code(12)
+    t = datetime.now().strftime("%Y-%m-%d %H:%M")
+    p = problem()
+    p.pid = pid
+    p.info = info
+    p.cid = cid
+    p.name = username
+    p.t = t
+    p.save()
+    problems = searchProblems(cid, 'all', username)
+    return JsonResponse({'status': 'success', 'problems': problems})
