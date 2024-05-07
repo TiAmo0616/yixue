@@ -26,7 +26,7 @@
                                 <button @click="start">开启直播</button>   
                             </el-col>
                         </el-row> -->
-                        <button @click="start">开启直播</button>   
+                        <!-- <button @click="start">开启直播</button>    -->
                     </div>
                         
                     <div v-else>
@@ -78,7 +78,8 @@
                         </video>   
                     </div>
                     <div v-else>
-                        <img src="../assets/t.jpeg" width="100%" height="200px">
+                        <!-- <img src="../assets/t.jpeg" width="100%" height="200px"> -->
+                        <img :src="image" alt="" width="100%" height="200px"/>
                     </div>
 
                     <!-- 连麦开启视频 -->
@@ -110,9 +111,11 @@
 </template>
 
 <script>
+import axios from 'axios'
 import ZLMRTCClient from '../utils/ZLMRTCClient';
 export default {
   name: 'zhibodemo',
+  props: ['uid','cid'],
   data () {
     return {
         streamUrl:'',
@@ -136,10 +139,42 @@ export default {
         pusher2:null,
         agree:false,
         have2:false,
+        image:null,
 
+        drawws:null,
+		draw: null,
+		drawColor: '#000000',
+		fillColor:'#000000',
+		drawLineWidth: 1,
+		drawType: '画笔',
+		lineEndType: '默认',
+		lineNodeType: '默认',
+		drawcanvas: '',
+		drawctx:'',
+		isDraw :1,
+		msg:'',
+		loadDraw:1,
+		showcanvas:null,
+		showctx:'',
     }
   },
-  
+  created(){
+    axios.post("http://127.0.0.1:8000/showInfo/",{'username':this.uid},{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        this.image = response.data.img
+      })
+
+      .catch(error => {
+        
+        console.error('Error:', error);
+      });
+      this.start()
+  },
   methods:{
     startPlay () {
        
@@ -310,7 +345,7 @@ export default {
     console.log(this.isplaying)
     //this.stop()
     this.startPlayMIC()
-
+   
     //   Promise.all([
     //     this.startPlayMIC(),
     //     this.startPlayCamera()
@@ -348,6 +383,10 @@ export default {
         this.isplaying = false
         this.useCamera = false
         this.usescreen = false
+        setTimeout(() => {
+            this.$router.push({ name: 'singleCourse' ,params:{'cid':this.cid}})
+        }, 2000);
+        
     },
     openMIC(){
         this.audioEnable = true
@@ -458,11 +497,142 @@ export default {
             this.pusher2 = null
         }
     },
-  }
+  },
+  mounted: function(){
+	this.drawcanvas = document.getElementById('drawBoard')
+    this.drawctx = this.drawcanvas.getContext('2d')
+	
+	this.showcanvas = document.getElementById('showBoard')
+    this.showctx = this.showcanvas.getContext('2d')
+	this.showcanvas.style.zIndex = "-1"
+	this.drawws = new WebSocket("ws://127.0.0.1:8000/"+this.username+"/canvas"+this.cid+"/")
+	this.draw = new canvasDraw("drawBoard",this.ws);
+	this.draw.draw();
+	this.drawws.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+		if (data['kind'] == 'history'){
+			for(let i = 0; i < data['message'].length;i++){
+				this.msg = data['message'][i]['message']
+				this.drawctx.strokeStyle = this.msg[6]
+				this.drawctx.fillStyle  = this.msg[7]
+				this.drawctx.lineWidth = this.msg[8]
+				this.drawctx.lineCap = this.msg[9]
+				this.drawctx.lineJoin = this.msg[10]
+				if(this.msg[0] == 'draw' && this.msg[1] == 'round'){
+					
+					this.drawctx.beginPath()
+					this.drawctx.arc(this.msg[2], this.msg[3],this.msg[4],0, Math.PI *2);
+					this.drawctx.fill();
+					this.drawctx.stroke();
+				}
+				else if(this.msg[0]=='clear'){
+					this.drawctx.clearRect(0,0,this.drawcanvas.width,this.drawcanvas.height);
+				}
+				else if(this.msg[0] == 'draw' && this.msg[1] == 'rect'){
+					this.drawctx.rect(this.msg[2], this.msg[3], this.msg[4], this.msg[5]);
+					this.drawctx.fill();
+					this.drawctx.stroke();
+				}
+				else if(this.msg[0] == 'draw' && this.msg[1] == 'line'){
+					this.drawctx.beginPath()
+					this.drawctx.moveTo(this.msg[2],this.msg[3])
+					this.drawctx.lineTo(this.msg[4],this.msg[5])
+					this.drawctx.stroke();
+				}
+				else{
+					if(this.msg[0]=="draw"||this.msg[0]=="stop"){
+						if(this.isDraw==1&&this.msg[0]!='stop'){
+								this.drawctx.beginPath()
+								this.drawctx.moveTo(this.msg[1],this.msg[2])
+								this.isDraw=0
+						}else if(this.isDraw==0&&this.msg[0]=='stop'){
+							this.isDraw=1
+						}
+						this.drawctx.lineTo(this.msg[3],this.msg[4])
+						this.drawctx.stroke()
+					}
+				
+				
+				}
+			}
+			this.draw.ctx.strokeStyle = this.drawColor
+			this.draw.ctx.fillStyle = this.fillColor
+			this.draw.ctx.lineCap = this.lineEndType
+			this.draw.ctx.lineJoin = this.lineNodeType
+			this.draw.ctx.lineWidth = this.drawLineWidth
+			//this.draw.ctx.drawType = this.drawType
+
+		}
+		else{
+			this.msg = data['message']['message']
+			if(data['message']['username']!=this.username){
+				if(this.msg[0]=='clear'){
+					this.drawctx.clearRect(0,0,this.drawcanvas.width,this.drawcanvas.height);
+					this.showctx.clearRect(0,0,this.showcanvas.width,this.showcanvas.height);
+				}
+				else{
+					this.mydraw(this.msg,this.showctx)
+				}
+				
+			}
+		}
+		
+	};
+  },
+  watch:{
+	drawColor:{
+		handler(newval,oldval){
+			this.draw.changeColor(newval)
+		}
+	},
+	fillColor:{
+		handler(newval,oldval){
+			this.draw.changeFillColor(newval)
+		}
+	},
+	//   drawColor(){
+	// 	  this.draw.changeColor(this.drawColor);
+	//   },
+	  drawLineWidth(){
+		  this.draw.changeLineWidth(this.drawLineWidth)
+	  },
+	//   fillColor(){
+	// 	  this.draw.changeFillColor(this.fillColor)
+	//   },
+	  drawType(){
+		  if(this.drawType=='直线'){
+			  this.draw.drawLine();
+		  }else if(this.drawType=='矩形'){
+			  this.draw.drawRect();
+		  }else if(this.drawType=='圆'){
+			  this.draw.drawRound();
+		  }else{
+			  this.draw.draw();
+		  }
+	  },
+	  lineEndType(){
+		  let lineEndType={
+			  '默认': 'butt',
+			  '半圆': 'round',
+			  '矩形': 'square'
+		  }
+		  this.draw.changeLineEnd(lineEndType[this.lineEndType]);
+	  },
+	  lineNodeType(){
+		  let lineNodeType={
+			  '默认': 'miter',
+			  '半圆': 'round',
+			  '斜角': 'bevel'
+		  }
+		  this.draw.changeLineNode(lineNodeType[this.lineNodeType]);
+	  }
+  },
+
+
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+
 <style scoped>
 input{
   width: 600px;

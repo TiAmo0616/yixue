@@ -14,6 +14,8 @@
         学生人数：{{ course.stuNum }}
         学时:{{ course.xueshi }}
         {{ course.status }}
+        <button>课程设置</button>
+        <button @click="classBegin">开始直播</button>
     </div>
     <!-- 服务 -->
     <div>
@@ -347,11 +349,13 @@ export default {
             console.error('Error:', error);
         });
     },
+    classBegin(){
+        this.$router.push({ name: 'zhibodemo' ,params:{"uid":this.username,'cid':this.cid}})
+    },
     }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .modal {
   position: fixed;

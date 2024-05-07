@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'app01',
     'corsheaders',
 ]
@@ -134,11 +135,17 @@ USE_TZ = True###时区
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-
+ASGI_APPLICATION = 'mysite.asgi.application'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+
+CHANNEL_LAYERS = {
+     "default": {
+         "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+ }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True

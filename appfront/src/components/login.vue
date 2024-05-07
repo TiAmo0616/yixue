@@ -145,8 +145,8 @@ position: absolute;
 
 #contents{
   background:rgba(255,255,255,0.6);
-  width: 800px;
-  height: 450px;
+  width: 900px;
+  height: 500px;
   top: 0;left: 0;right: 0;bottom: 0;margin: auto;
   
 }
