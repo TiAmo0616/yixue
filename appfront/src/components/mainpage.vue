@@ -5,9 +5,7 @@
     <Daohanglan :isLoggedIn="isLoggedIn" :user="username"></Daohanglan>
   </div>
   <!-- 图片滑动 -->
-  <div>
-    <button @click="webrtc">去webRTC</button>
-  </div>
+  
   <!-- 显示课程 -->
   <div>
     <div>
@@ -89,9 +87,7 @@ export default {
    seeall(){
     this.$router.push({ name: 'courses'})
    },
-   webrtc(){
-    window.location.href="https://zlmediakit.com/webrtc/"
-   }
+ 
   }
 }
 </script>
