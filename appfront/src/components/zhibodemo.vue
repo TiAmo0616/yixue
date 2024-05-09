@@ -3,34 +3,71 @@
 
        <el-row>
             <el-col :span="18">
-                <!-- 主要直播界面，屏幕共享，如果不共享就是摄像头画面 -->
-                <div class="mainVideo">
-                    <video id='selfVideo' controls autoplay style="text-align:right;" width="100%">
-                        Your browser is too old which doesn't support HTML5 video.
-                    </video>   
-                    
-                </div>
-                    <!-- 直播开启前的选择 -->
-                    <div v-if="!this.isplaying">
-                        <!-- <el-row>
-                            <el-col :span="2">
-                                <el-checkbox v-model="useCamera">摄像头</el-checkbox> 
-                            </el-col>
-                            <el-col :span="2">
-                                <el-checkbox v-model="audioEnable">麦克风</el-checkbox>
-                            </el-col>
-                            <el-col :span="2">
-                                <el-checkbox v-model="usescreen">屏幕共享</el-checkbox>
-                            </el-col>
-                            <el-col :span="2">
-                                <button @click="start">开启直播</button>   
-                            </el-col>
-                        </el-row> -->
-                        <!-- <button @click="start">开启直播</button>    -->
+                <!-- 主要直播界面，屏幕共享 -->
+                <div>
+                    <div class="mainVideo" v-show="!this.boardShow">
+                        <video id='selfVideo' controls autoplay style="text-align:right;" width="100%">
+                            Your browser is too old which doesn't support HTML5 video.
+                        </video>   
                     </div>
-                        
-                    <div v-else>
+                    <!-- 如果开启白板 -->
+                    <div class="drawBoard" v-show="this.boardShow">
                         <el-row>
+                            <el-col :span="4">
+                                <div class="canvasSetting">
+                                    <label><input name="drawType" type="radio" value="画笔" v-model="drawType"/>画笔 </label> 
+                                    <br/>
+                                    <label><input name="drawType" type="radio" value="直线" v-model="drawType"/>直线 </label> 
+                                    <br/>
+                                    <label><input name="drawType" type="radio" value="矩形" v-model="drawType"/>矩形 </label> 
+                                    <br/>
+                                    <label><input name="drawType" type="radio" value="圆" v-model="drawType"/>圆 </label> 
+                                    <br/>
+                                    填充颜色：
+                                    <input type="color" v-model="fillColor"/> 
+                                    <br/>
+                                    选择颜色：
+                                    <input type="color" v-model="drawColor"/> 
+                                    <br/>
+                                    笔粗细
+                                    <input type="range" v-model="drawLineWidth" min="1" max="10" />{{drawLineWidth}}
+                                    <br/>
+                                    线端点类型
+                                    <select v-model="lineEndType">
+                                        <option>默认</option>
+                                        <option>半圆</option>
+                                        <option>矩形</option>
+                                    </select>
+                                    <br/>
+                                    矩形角类型
+                                    <select v-model="lineNodeType">
+                                        <option>默认</option>
+                                        <option>半圆</option>
+                                        <option>斜角</option>
+                                    </select>
+
+                                </div>
+                                <div>
+                                    <button class="clearButton" @click="clearDraw()">清空白板</button>
+                                </div>
+                        
+                            </el-col>
+                            <el-col :span="14">
+                                <div id="board" class="canvas-layers" >
+                                    <canvas id="drawBoard"  width="600"  height="300" style="position:absolute; "></canvas>
+                                    <canvas id="showBoard"  width="600"  height="300" style="position:absolute;"></canvas>
+                                </div>
+                        
+                            </el-col>
+                            
+                        </el-row>    
+	                </div>
+                    <!-- 白板代码结束 -->
+                </div>
+                
+                <!-- 工具栏 -->
+                <div>
+                    <el-row>
                             <el-col :span="4">
                                 <div v-if="this.audioEnable">
                                     <el-button type="primary" icon="el-icon-microphone" @click="closeMIC"></el-button>
@@ -58,15 +95,15 @@
                                
                             </el-col>
                             <el-col :span="2">
-                                <button @click="agreehand">同意举手</button>
-                                <button v-show="this.agree" @click="closeHand">关闭举手</button>
+                                <button v-show="!this.boardShow" @click="openBoard">使用白板</button>
+                                <button v-show="this.boardShow" @click="closeBoard">关闭白板</button>
                             </el-col>
+                           
                             <el-col :span="4">
                                 <button @click="stop">结束直播</button>    
                             </el-col>
                         </el-row>
-                      
-                    </div>
+                </div>
             </el-col>
             <el-col :span="6">
                 
@@ -156,6 +193,7 @@ export default {
 		loadDraw:1,
 		showcanvas:null,
 		showctx:'',
+        boardShow:false,
     }
   },
   created(){
@@ -383,6 +421,7 @@ export default {
         this.isplaying = false
         this.useCamera = false
         this.usescreen = false
+        this.drawws.send("over,")
         setTimeout(() => {
             this.$router.push({ name: 'singleCourse' ,params:{'cid':this.cid}})
         }, 2000);
@@ -497,6 +536,109 @@ export default {
             this.pusher2 = null
         }
     },
+    closeBoard(){
+        this.boardShow = false
+        this.drawws.send("close,")
+    },
+    openBoard(){
+       
+        this.boardShow = true
+       this.drawws.send("open,")
+    },
+    clearDraw(){
+			this.draw.clearCanvas();
+			this.showctx.clearRect(0,0,this.showcanvas.width,this.showcanvas.height);
+	},
+	mydraw(msg,ctx1){
+			ctx1.strokeStyle = msg[6]
+			ctx1.fillStyle  = msg[7]
+			ctx1.lineWidth = msg[8]
+			ctx1.lineCap = msg[9]
+			ctx1.lineJoin = msg[10]
+			
+			if(msg[0] == 'draw' && msg[1] == 'round'){
+					
+				ctx1.beginPath()
+				ctx1.arc(msg[2], msg[3],msg[4],0, Math.PI *2);
+				ctx1.fill();
+				ctx1.stroke();
+				}
+			else if(msg[0] == 'draw' && msg[1] == 'rect'){
+					ctx1.fillRect(msg[2], msg[3], msg[4],msg[5])
+					ctx1.strokeRect(msg[2], msg[3], msg[4],msg[5])
+					
+				}
+			else if(msg[0] == 'draw' && msg[1] == 'line'){
+					ctx1.beginPath()
+					ctx1.moveTo(msg[2],msg[3])
+					ctx1.lineTo(msg[4],msg[5])
+					ctx1.stroke();
+				}
+			else{
+				if(msg[0]=="draw"||msg[0]=="stop"){
+					if(this.loadDraw==1&&msg[0]!='stop'){
+							ctx1.beginPath()
+							ctx1.moveTo(msg[1],msg[2])
+							this.loadDraw=0
+					}else if(this.loadDraw==0&&msg[0]=='stop'){
+						this.loadDraw=1
+					}
+					ctx1.lineTo(msg[3],msg[4])
+					ctx1.stroke()
+				}
+				
+				
+				}
+	},
+  },
+  
+  watch:{
+	drawColor:{
+		handler(newval,oldval){
+			this.draw.changeColor(newval)
+		}
+	},
+	fillColor:{
+		handler(newval,oldval){
+			this.draw.changeFillColor(newval)
+		}
+	},
+	//   drawColor(){
+	// 	  this.draw.changeColor(this.drawColor);
+	//   },
+	  drawLineWidth(){
+		  this.draw.changeLineWidth(this.drawLineWidth)
+	  },
+	//   fillColor(){
+	// 	  this.draw.changeFillColor(this.fillColor)
+	//   },
+	  drawType(){
+		  if(this.drawType=='直线'){
+			  this.draw.drawLine();
+		  }else if(this.drawType=='矩形'){
+			  this.draw.drawRect();
+		  }else if(this.drawType=='圆'){
+			  this.draw.drawRound();
+		  }else{
+			  this.draw.draw();
+		  }
+	  },
+	  lineEndType(){
+		  let lineEndType={
+			  '默认': 'butt',
+			  '半圆': 'round',
+			  '矩形': 'square'
+		  }
+		  this.draw.changeLineEnd(lineEndType[this.lineEndType]);
+	  },
+	  lineNodeType(){
+		  let lineNodeType={
+			  '默认': 'miter',
+			  '半圆': 'round',
+			  '斜角': 'bevel'
+		  }
+		  this.draw.changeLineNode(lineNodeType[this.lineNodeType]);
+	  }
   },
   mounted: function(){
 	this.drawcanvas = document.getElementById('drawBoard')
@@ -505,8 +647,8 @@ export default {
 	this.showcanvas = document.getElementById('showBoard')
     this.showctx = this.showcanvas.getContext('2d')
 	this.showcanvas.style.zIndex = "-1"
-	this.drawws = new WebSocket("ws://127.0.0.1:8000/"+this.username+"/canvas"+this.cid+"/")
-	this.draw = new canvasDraw("drawBoard",this.ws);
+    this.drawws = new WebSocket("ws://127.0.0.1:8000/"+this.uid+"/canvas"+this.cid+"/")
+    this.draw = new canvasDraw("drawBoard",this.drawws);
 	this.draw.draw();
 	this.drawws.onmessage = (event) => {
 		const data = JSON.parse(event.data);
@@ -563,9 +705,15 @@ export default {
 			//this.draw.ctx.drawType = this.drawType
 
 		}
+        else if(data['kind'] == 'open'){
+            this.boardShow = true
+        }
+        else if(data['kind'] == 'over'){
+            
+        }
 		else{
 			this.msg = data['message']['message']
-			if(data['message']['username']!=this.username){
+			if(data['message']['username']!=this.uid){
 				if(this.msg[0]=='clear'){
 					this.drawctx.clearRect(0,0,this.drawcanvas.width,this.drawcanvas.height);
 					this.showctx.clearRect(0,0,this.showcanvas.width,this.showcanvas.height);
@@ -579,66 +727,143 @@ export default {
 		
 	};
   },
-  watch:{
-	drawColor:{
-		handler(newval,oldval){
-			this.draw.changeColor(newval)
-		}
-	},
-	fillColor:{
-		handler(newval,oldval){
-			this.draw.changeFillColor(newval)
-		}
-	},
-	//   drawColor(){
-	// 	  this.draw.changeColor(this.drawColor);
-	//   },
-	  drawLineWidth(){
-		  this.draw.changeLineWidth(this.drawLineWidth)
-	  },
-	//   fillColor(){
-	// 	  this.draw.changeFillColor(this.fillColor)
-	//   },
-	  drawType(){
-		  if(this.drawType=='直线'){
-			  this.draw.drawLine();
-		  }else if(this.drawType=='矩形'){
-			  this.draw.drawRect();
-		  }else if(this.drawType=='圆'){
-			  this.draw.drawRound();
-		  }else{
-			  this.draw.draw();
-		  }
-	  },
-	  lineEndType(){
-		  let lineEndType={
-			  '默认': 'butt',
-			  '半圆': 'round',
-			  '矩形': 'square'
-		  }
-		  this.draw.changeLineEnd(lineEndType[this.lineEndType]);
-	  },
-	  lineNodeType(){
-		  let lineNodeType={
-			  '默认': 'miter',
-			  '半圆': 'round',
-			  '斜角': 'bevel'
-		  }
-		  this.draw.changeLineNode(lineNodeType[this.lineNodeType]);
-	  }
-  },
 
+}
+class canvasDraw{
+	constructor(id,ws){
+		this.ws= ws;
+		this.canvas = document.getElementById(id);
+		this.ctx = this.canvas.getContext('2d')
+		this.ctx.drawColor='#000000'
+		this.ctx.fillColor = '#000000'
+		this.ctx.lineWidth=1
+		this.ctx.lineCap='默认'
+		this.ctx.lineJoin = '默认'
+		this.stage_info = this.canvas.getBoundingClientRect()
+		this.path = {
+			beginX: 0,
+			beginY: 0,
+			endX: 0,
+			endY: 0
+		}
+		this.isDraw=false
+	}
+	changeColor(color){
+		this.ctx.strokeStyle = color;
+	}
+	changeLineWidth(lineWidth){
+		this.ctx.lineWidth = lineWidth;
+	}
+	changeFillColor(color){
+		this.ctx.fillStyle = color;
+	}
+	changeLineEnd(lineEndtype){
+		this.ctx.lineCap = lineEndtype;
+	}
+	changeLineNode(lineNode){
+		this.ctx.lineJoin = lineNode;
+	}
+	drawLine(){
+		this.canvas.onmousedown=()=>{
+			this.ctx.beginPath()
+			this.path.beginX = event.pageX - this.stage_info.left
+			this.path.beginY = event.pageY - this.stage_info.top
+			this.ctx.moveTo(
+				this.path.beginX,
+				this.path.beginY
+			)
+		}
+		this.canvas.onmouseup=()=>{
+			this.path.endX = event.pageX - this.stage_info.left
+			this.path.endY = event.pageY - this.stage_info.top
+			this.ctx.lineTo(
+				this.path.endX,
+				this.path.endY
+			)
+			this.ctx.stroke();
+			this.ws.send(`draw,line,${this.path.beginX},${this.path.beginY},${this.path.endX},${this.path.endY},${this.ctx.strokeStyle},${this.ctx.fillStyle},${this.ctx.lineWidth},${this.ctx.lineCap},${this.ctx.lineJoin}`)
+		}
+	}
+	drawRect(){
+		this.canvas.onmousedown=()=>{
+			this.ctx.beginPath()
+			this.path.beginX = event.pageX - this.stage_info.left
+			this.path.beginY = event.pageY - this.stage_info.top
+		}
+		this.canvas.onmouseup=()=>{
+			this.path.endX = event.pageX - this.stage_info.left
+			this.path.endY = event.pageY - this.stage_info.top
+			this.ctx.rect(this.path.beginX, this.path.beginY, this.path.endX-this.path.beginX, this.path.endY-this.path.beginY);
+			this.ctx.fill();
+			this.ctx.stroke();
+			this.ws.send(`draw,rect,${this.path.beginX},${this.path.beginY},${this.path.endX-this.path.beginX},${this.path.endY-this.path.beginY},${this.ctx.strokeStyle},${this.ctx.fillStyle},${this.ctx.lineWidth},${this.ctx.lineCap},${this.ctx.lineJoin}`)
+		}
+	}
+	drawRound(){
+		this.canvas.onmousedown=()=>{
+			this.ctx.beginPath()
+			this.path.beginX = event.pageX - this.stage_info.left
+			this.path.beginY = event.pageY - this.stage_info.top
+		}
+		this.canvas.onmouseup=()=>{
+			this.path.endX = event.pageX - this.stage_info.left
+			this.path.endY = event.pageY - this.stage_info.top
+			let width = this.path.endX-this.path.beginX;
+			let height = this.path.endY-this.path.beginY;
+			this.ctx.arc(this.path.beginX+width/2, this.path.beginY+height/2,Math.sqrt(width*width+height*height)/2,0, Math.PI *2);
+			this.ctx.fill();
+			this.ctx.stroke();
+			this.ws.send(`draw,round,${this.path.beginX+width/2},${this.path.beginY+height/2},${Math.sqrt(width*width+height*height)/2},0,${this.ctx.strokeStyle},${this.ctx.fillStyle},${this.ctx.lineWidth},${this.ctx.lineCap},${this.ctx.lineJoin}`)
+		}
+	}
+	draw(){
+		let that = this
+		this.canvas.onmousedown = () => {
+			that.ctx.beginPath()
+			that.path.beginX = event.pageX - that.stage_info.left
+			that.path.beginY = event.pageY - that.stage_info.top
+			that.ctx.moveTo(
+				that.path.beginX,
+				that.path.beginY
+			)
+			that.isDraw=true
+		}
+		this.canvas.onmousemove = () => {
+			if(that.isDraw){
+				that.drawing(event)
+			}
+		}
+		this.canvas.onmouseup = () => {
+			that.isDraw=false
+			that.ws.send('stop,')
+		}
+	}
+	drawing(e) {
+		this.path.endX = e.pageX - this.stage_info.left
+		this.path.endY = e.pageY - this.stage_info.top
+		this.ctx.lineTo(
+			this.path.endX,
+			this.path.endY
+		)
+		this.ctx.stroke()
+		console.log(this.ctx.strokeStyle)
+		this.ws.send(`draw,${this.path.beginX},${this.path.beginY},${this.path.endX},${this.path.endY},0,${this.ctx.strokeStyle},${this.ctx.fillStyle},${this.ctx.lineWidth},${this.ctx.lineCap},${this.ctx.lineJoin}`)
 
+	}
+	clearCanvas(){
+		this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height); 
+		this.ws.send('clear,')
+	}
 }
 </script>
 
 
 <style scoped>
 input{
-  width: 600px;
+  width: 80px;
 }
 #rside{
-    background-color: rgb(213, 218, 218);
+    background-color: rgb(228, 244, 251);
     height: 720px;
 }
 .mainVideo{
@@ -653,4 +878,99 @@ input{
     width:100%; 
     height:25%;
 }
+/* 白板的CSS */
+
+input[type="range"]{
+	width: 45%;
+}
+#drawBoard { 
+	border: 2px solid black; 
+    
+    /* width:800px;
+    height:650px; */
+    /* position:absolute; */
+	
+}
+#showBoard{
+    border: 2px solid black; 
+    width:600;
+    height:300;
+    /* width:800px;
+    height:650px; */
+    /* position:absolute; */
+}
+.clearButton{
+	vertical-align: bottom;
+}
+.clear{
+	clear:both;
+}
+
+#board{
+	position: absolute;
+	background: #addcf3;
+	
+} 
+
+.canvasSetting {
+    margin: 10px;
+    padding: 0px;
+    background-color: #e8f2f8;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    vertical-align:top;
+    text-align: left;
+    display: inline-block;
+  }
+
+  .canvasSetting label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  .canvasSetting input[type="color"],
+  .canvasSetting input[type="range"],
+  .canvasSetting select {
+    margin-top: 5px;
+  }
+
+  .clearButton {
+    display: inline-block;
+    /* margin-top: 20px; */
+    padding: 5px;
+    background-color: #fc2727;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+	width:120px
+  }
+
+  .clearButton:hover {
+    background-color: #e87f79;
+  }
+
+
+ /* Add some spacing between radio buttons */
+ .canvasSetting > label:not(:last-child) {
+    margin-bottom: 15px;
+  }
+
+  /* Style the range input */
+  .canvasSetting input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+  }
+
+
 </style>

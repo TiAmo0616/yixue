@@ -22,7 +22,8 @@ class ChatConsumer1(WebsocketConsumer):
         username = self.scope['url_route']['kwargs'].get("username")
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         users.append(username)######
-
+        if group not in History:
+            History[group] = []
         async_to_sync(self.channel_layer.group_add)(group, self.channel_name)
         async_to_sync(self.channel_layer.send)(self.channel_name, {"type": "getHistory", 'message': History[group]})
 
@@ -36,17 +37,27 @@ class ChatConsumer1(WebsocketConsumer):
         group = self.scope['url_route']['kwargs'].get("group")
         username = self.scope['url_route']['kwargs'].get("username")
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        if msg[0] == 'clear':
-            History[group] = []
-        data = {
-            'username': username,
-            'message': msg,
-            'timestamp': timestamp,
-        }
-        print(msg)
-        History.setdefault(group, []).append(data)
-        # 通知“1”组内所有的客户端，执行XX.oo方法，在此方法内可以执行任意的功能
-        async_to_sync(self.channel_layer.group_send)(group, {"type": "xx.oo", "message": data})
+        #教师开启白板了，通知学生端全部开启白板
+        if msg[0] == 'open':
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "openBoard", "message": {'msg':msg[0]}})
+        elif msg[0] == 'close':
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "closeBoard", "message": {'msg':msg[0]}})
+        elif msg[0] == 'over':
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "classover", "message": {'msg':msg[0]}})
+        else:
+
+            if msg[0] == 'clear':
+                History[group] = []
+
+            data = {
+                'username': username,
+                'message': msg,
+                'timestamp': timestamp,
+            }
+            print(msg)
+            History.setdefault(group, []).append(data)
+            # 通知“1”组内所有的客户端，执行XX.oo方法，在此方法内可以执行任意的功能
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "xx.oo", "message": data})
 
 
     def websocket_disconnect(self, message):
@@ -77,14 +88,13 @@ class ChatConsumer1(WebsocketConsumer):
         self.send(json.dumps({'kind': "user",
                               'name': event['name']}))  # 给组内所有人回复
 
+    def openBoard(self,event):
+        self.send(json.dumps({'kind': "open",
+                              'msg': event['message']}))  # 给组内所有人回复
+    def closeBoard(self,event):
+        self.send(json.dumps({'kind': "close",
+                              'msg': event['message']}))  # 给组内所有人回复
 
-#
-# def login(request):
-#     print(users)
-#     print(userList)
-#     username = request.POST.get('userName')
-#     if username not in users:
-#         return JsonResponse({'status': 'success', 'exist': "no"})
-#     else:
-#
-#         return JsonResponse({'status': 'success', 'exist': "yes"})
+    def classover(self,event):
+        self.send(json.dumps({'kind': "over",
+                              'msg': event['message']}))  # 给组内所有人回复

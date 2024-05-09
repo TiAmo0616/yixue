@@ -141,7 +141,7 @@ def showCourse(request):
     temp['status'] = course.status
     temp['teacher'] = course.teacher
     temp['introduction'] = course.introduction
-
+    temp['u'] = course.username
     return JsonResponse({'status': 'success','course':temp})
 
 #精选课程

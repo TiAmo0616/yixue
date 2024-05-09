@@ -23,7 +23,7 @@ courses.vue
 我的工作：
 直播模块
 
-白板
+~~白板~~(canvas绘制偏离问题没有解决，CSS要调)
 
 聊天
 
@@ -39,9 +39,9 @@ courses.vue
 
 前端界面设计：
 
-zhibodemo.vue
+zhibodemo.vue（有一个问题是canvas绘制偏离，需要调CSS样式，但我没调好，哭）
 
-studentzhibo.vue
+studentzhibo.vue（cnavas问题同上）
 
 teacherPage.vue
 
@@ -194,3 +194,7 @@ homework.vue 和studentCourse.vue，学生可以写作业，提交之后显示�
 好久没有写了，一时间无从下手.....
 
 先把直播模块搞了吧，趁我还有点熟悉
+
+2024.5.9
+
+canvas不知道为什么绘制一直有偏差，一直没调好

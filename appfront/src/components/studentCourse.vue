@@ -14,6 +14,7 @@
                 
         学时:{{ course.xueshi }}
         {{ course.status }}
+        <button @click="classBegin">进入直播</button>
     </div>
     <!-- 服务 -->
     <div>
@@ -83,7 +84,7 @@ export default {
       works:[],
       wids:[],
       statuses:{},
-
+      teacher:''
     }
   },
   created(){
@@ -97,6 +98,7 @@ export default {
         console.log(response.data)
         if(response.data.status == 'success'){
           this.course = response.data.course
+          this.teacher = this.course.u
         }
          
       })
@@ -173,7 +175,10 @@ export default {
       
         see(wid){
       this.$router.push({ name: 'myWork' ,params:{"wid":wid,'cid':this.cid}})
-      }
+      },
+      classBegin(){
+        this.$router.push({ name: 'studentzhibo' ,params:{"uid":this.username,'cid':this.cid,'teacherid':this.teacher}})
+    },
   }
 }
 </script>
