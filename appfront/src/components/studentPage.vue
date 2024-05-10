@@ -49,7 +49,8 @@ export default {
   },
   data () {
     return {
-      courses:[]
+      courses:[],
+      zhibocourse:''
     }
   },
   created(){
@@ -62,6 +63,11 @@ export default {
         console.log(response.data)
         if(response.data.status == 'success'){
           this.courses = response.data.courses
+          
+          if(response.data.zhibo){
+            this.zhibocourse = response.data.zhibo[0]
+            alert(this.zhibocourse+"正在直播!")
+          }
         }
          
       })

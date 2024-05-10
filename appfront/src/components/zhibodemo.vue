@@ -98,7 +98,9 @@
                                 <button v-show="!this.boardShow" @click="openBoard">使用白板</button>
                                 <button v-show="this.boardShow" @click="closeBoard">关闭白板</button>
                             </el-col>
-                           
+                            <el-col :span="4">
+                                <button @click="dianming">随机点名</button>    
+                            </el-col>
                             <el-col :span="4">
                                 <button @click="stop">结束直播</button>    
                             </el-col>
@@ -194,6 +196,8 @@ export default {
 		showcanvas:null,
 		showctx:'',
         boardShow:false,
+
+        dianmingShow:false
     }
   },
   created(){
@@ -422,9 +426,22 @@ export default {
         this.useCamera = false
         this.usescreen = false
         this.drawws.send("over,")
-        setTimeout(() => {
-            this.$router.push({ name: 'singleCourse' ,params:{'cid':this.cid}})
-        }, 2000);
+        
+        axios.post("http://127.0.0.1:8000/endClass/",{'cid':this.cid},{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+        .then(response =>{
+            console.log(response.data)
+            setTimeout(() => {
+                this.$router.push({ name: 'singleCourse' ,params:{'cid':this.cid}})
+            }, 2000);
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
         
     },
     openMIC(){
@@ -590,6 +607,9 @@ export default {
 				
 				}
 	},
+    dianming(){
+        this.drawws.send("dianming,")
+    },
   },
   
   watch:{
@@ -710,6 +730,10 @@ export default {
         }
         else if(data['kind'] == 'over'){
             
+        }
+        else if(data['kind'] == 'dianming'){
+            //this.dianmingShow = true
+            alert("随机点名选中"+data['msg'])
         }
 		else{
 			this.msg = data['message']['message']

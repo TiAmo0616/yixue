@@ -26,6 +26,7 @@ class Course(models.Model):
     img = models.CharField(max_length=64,default='defaultCourse.png')
     username = models.CharField(max_length=32,default='')#创建课程的账号
     status = models.CharField(max_length=64,default='进行中')
+    zhibo = models.CharField(max_length=64,default='暂无直播')
     # createdate = models.DateField()
 
 # 学生点击作业的时候再存入数据库

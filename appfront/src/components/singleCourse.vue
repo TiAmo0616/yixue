@@ -350,7 +350,20 @@ export default {
         });
     },
     classBegin(){
-        this.$router.push({ name: 'zhibodemo' ,params:{"uid":this.username,'cid':this.cid}})
+        axios.post("http://127.0.0.1:8000/beginClass/",{'cid':this.cid},{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+        .then(response =>{
+            console.log(response.data)
+            this.$router.push({ name: 'zhibodemo' ,params:{"uid":this.username,'cid':this.cid}})
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+        
     },
     }
 }

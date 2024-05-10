@@ -197,13 +197,14 @@ export default {
       .then(response =>{
         console.log(response.data)
         this.image = response.data.img
+        this.start()
       })
 
       .catch(error => {
         
         console.error('Error:', error);
       });
-      this.start()
+      
   },
   methods:{
     startPlay () {
@@ -650,6 +651,10 @@ export default {
         }
         else if(data['kind'] == 'close'){
             this.boardShow = false
+        }
+        else if(data['kind'] == 'dianming'){
+            //this.dianmingShow = true
+            alert("随机点名选中"+data['msg'])
         }
         else if(data['kind'] == 'over'){
             

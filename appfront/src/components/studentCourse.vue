@@ -14,7 +14,8 @@
                 
         学时:{{ course.xueshi }}
         {{ course.status }}
-        <button @click="classBegin">进入直播</button>
+        <button v-show="!this.zhiboShow">直播未开始</button>
+        <button v-show="this.zhiboShow"@click="classBegin">进入直播</button>
     </div>
     <!-- 服务 -->
     <div>
@@ -84,7 +85,10 @@ export default {
       works:[],
       wids:[],
       statuses:{},
-      teacher:''
+      teacher:'',
+      zhibo:'',
+      zhiboShow:false,
+
     }
   },
   created(){
@@ -99,6 +103,12 @@ export default {
         if(response.data.status == 'success'){
           this.course = response.data.course
           this.teacher = this.course.u
+          this.zhibo = this.course.zhibo
+          if(this.zhibo == '暂无直播'){
+            this.zhiboShow = false
+          }else{
+            this.zhiboShow = true
+          }
         }
          
       })

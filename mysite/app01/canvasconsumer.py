@@ -2,12 +2,15 @@
 import json
 import os
 import pickle
+import random
 from datetime import datetime
 
 from channels.generic.websocket import WebsocketConsumer
 from channels.exceptions import StopConsumer
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
+
+from app01.models import sc
 
 users=[]
 History = {'demo':[]}
@@ -44,6 +47,9 @@ class ChatConsumer1(WebsocketConsumer):
             async_to_sync(self.channel_layer.group_send)(group, {"type": "closeBoard", "message": {'msg':msg[0]}})
         elif msg[0] == 'over':
             async_to_sync(self.channel_layer.group_send)(group, {"type": "classover", "message": {'msg':msg[0]}})
+        elif msg[0] == 'dianming':
+            one = randomSelect(group)
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "dianming", "message": {'msg':one}})
         else:
 
             if msg[0] == 'clear':
@@ -98,3 +104,14 @@ class ChatConsumer1(WebsocketConsumer):
     def classover(self,event):
         self.send(json.dumps({'kind': "over",
                               'msg': event['message']}))  # 给组内所有人回复
+
+    def dianming(self,event):
+        self.send(json.dumps({'kind': "dianming",'msg': event['message']['msg']}))  # 给组内所有人回复
+
+def randomSelect(cid):
+    students = sc.objects.filter(cid=cid)
+    people=[]
+    for i in students:
+        people.append(i.stuName)
+    one = random.sample(people,1)
+    return one

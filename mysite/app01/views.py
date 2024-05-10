@@ -142,6 +142,7 @@ def showCourse(request):
     temp['teacher'] = course.teacher
     temp['introduction'] = course.introduction
     temp['u'] = course.username
+    temp['zhibo'] = course.zhibo
     return JsonResponse({'status': 'success','course':temp})
 
 #精选课程
@@ -500,6 +501,7 @@ def studentCourses(request):
     username = request.POST.get('username')
     courses = sc.objects.filter(stuName=username)
     res=[]
+    zhiboCourse=[]
     for i in courses:
         course = Course.objects.filter(cid = i.cid).first()
         temp = {}
@@ -508,8 +510,11 @@ def studentCourses(request):
         temp['img'] = "http://127.0.0.1:8000/static/"+ course.img
         temp['xueshi'] = course.xueshi
         temp['status'] = course.status
+        if course.zhibo == '正在直播':
+            zhiboCourse.append(course.cname)
+            zhiboCourse.append(course.cid)
         res.append(temp)
-    return JsonResponse({'status': 'success', 'courses': res})
+    return JsonResponse({'status': 'success', 'courses': res,'zhibo':zhiboCourse})
 
 def exitCourse(request):
     username = request.POST.get('username')
@@ -752,3 +757,17 @@ def saveProblems(request):
     p.save()
     problems = searchProblems(cid, 'all', username)
     return JsonResponse({'status': 'success', 'problems': problems})
+
+def beginClass(request):
+    cid = request.POST.get('cid')
+    course = Course.objects.filter(cid=cid).first()
+    course.zhibo = '正在直播'
+    course.save()
+    return JsonResponse({'status': 'success'})
+
+def endClass(request):
+    cid = request.POST.get('cid')
+    course = Course.objects.filter(cid=cid).first()
+    course.zhibo = '暂无直播'
+    course.save()
+    return JsonResponse({'status': 'success'})

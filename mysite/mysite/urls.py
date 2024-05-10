@@ -50,5 +50,6 @@ urlpatterns = [
     path('saveCheck/',views.saveCheck),
     path('showProblems/',views.showProblems),
     path('saveProblems/',views.saveProblems),
-
+    path('beginClass/',views.beginClass),
+    path('endClass/',views.endClass),
 ]
