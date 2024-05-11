@@ -65,7 +65,8 @@
                 </div>
                     <div class="gjlan">
                         <div>
-                            <button @click="hand">举手</button>
+                            <el-button type="primary" @click="hand">举手</el-button>
+                            
                         </div>
                         <div v-if="this.perimit">
                             <button v-show="!this.myMIC" @click="pushMIC">开启麦克风</button>
@@ -114,13 +115,16 @@
                             Your browser is too old which doesn't support HTML5 video.
                     </video> 
                     <!-- 连麦开启视频 -->
-                    <div v-show="this.perimit">
+                    <div v-show="this.perimit ||  this.otherHand">
                         <div v-show="this.myCamera">
                             <video id='myVideo' controls autoplay ></video>
                         </div>
                         <div v-show="!this.myCamera">
-                            <img src="../assets/s.jpg" width="100%" height="200px">
+                            <img :src="myImage"  alt="" width="100%" height="200px">
                         </div>
+                        <video v-show="false" id='myMIC' controls autoplay >
+                            Your browser is too old which doesn't support HTML5 video.
+                        </video> 
                     </div>
                     
                     <!-- 聊天界面 -->
@@ -185,11 +189,16 @@ export default {
 		showcanvas:null,
 		showctx:'',
         boardShow:false,
+
+        player3:null,
+        player4:null,
+        otherHand:false,
+        myImage:'',
     }
   },
   created(){
     console.log(this.teacherid)
-    axios.post("http://127.0.0.1:8000/showInfo/",{'username':this.teacherid},{
+    axios.post("http://127.0.0.1:8000/showzhiboInfo/",{'username':this.teacherid,'myName':this.uid},{
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -197,7 +206,11 @@ export default {
       .then(response =>{
         console.log(response.data)
         this.image = response.data.img
+        this.myImage = response.data.myImage
+        console.log(this.myImage)
         this.start()
+        this.startPlayer3()
+        this.startPlayer4()
       })
 
       .catch(error => {
@@ -270,6 +283,78 @@ export default {
       
       
       
+    },
+    startPlayer3(){
+        this.player3 = new ZLMRTCClient.Endpoint({
+            element: document.getElementById('myVideo'), // video 标签
+            debug: false, // 是否打印日志
+            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentCamera&type=play", //流地址
+            simulcast: false,
+            useCamera: false,
+            audioEnable: true,
+            videoEnable: true,
+            recvOnly: true,
+            resolution: { w: this.w, h: this.h },
+            usedatachannel: false
+            })
+        
+        this.player3.on(ZLMRTCClient.Events.WEBRTC_OFFER_ANWSER_EXCHANGE_FAILED, (e) =>{
+            // offer anwser 交换失败
+            console.log('offer anwser 交换失败', e)
+            //this.stop()
+            this.startPlayer3()
+        })
+        this.player3.on(ZLMRTCClient.Events.WEBRTC_ON_CONNECTION_STATE_CHANGE, (state) =>{
+       
+        if(state == 'connected'){
+           this.otherHand = true
+            this.myCamera = true
+        }
+        else if(state== 'failed'){
+            
+            this.myCamera = false
+            this.startPlayer3()
+        }
+        
+        console.log('举手学生摄像头当前状态==>', state)
+      })
+            
+
+    },
+    startPlayer4(){
+        this.player4 = new ZLMRTCClient.Endpoint({
+            element: document.getElementById('myMIC'), // video 标签
+            debug: false, // 是否打印日志
+            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentMIC&type=play", //流地址
+            simulcast: false,
+            useCamera: false,
+            audioEnable: true,
+            videoEnable: true,
+            recvOnly: true,
+            resolution: { w: this.w, h: this.h },
+            usedatachannel: false
+            })
+        
+        this.player4.on(ZLMRTCClient.Events.WEBRTC_OFFER_ANWSER_EXCHANGE_FAILED, (e) =>{
+            // offer anwser 交换失败
+            console.log('offer anwser 交换失败', e)
+            //this.stop()
+            this.startPlayer4()
+        })
+        this.player4.on(ZLMRTCClient.Events.WEBRTC_ON_CONNECTION_STATE_CHANGE, (state) =>{
+       
+        if(state == 'connected' || state == 'connecting'){
+            
+        }
+        else if(state== 'failed'){
+           
+            this.startPlayer4()
+        }
+        
+        console.log('举手学生麦克风当前状态==>', state)
+      })
+            
+
     },
     startPlayCamera(){
         this.player1 = new ZLMRTCClient.Endpoint({
@@ -374,7 +459,7 @@ export default {
     },
     hand(){//用websocket去通知教师
         this.ishand = true
-        this.perimit = true
+        this.drawws.send("hand,"+this.uid+","+this.myImage+",")
         
     },
     pushCamera(){
@@ -532,6 +617,19 @@ export default {
 				
 				}
 	},
+    stopOtherPlay(){
+        if(this.player3){
+            this.player3.close()
+            this.player3= null
+        }
+        if(this.player4){
+            this.player4.close()
+            this.player4= null
+        }
+        this.myCamera = false
+        this.myMIC = false
+        this.otherHand = false
+    }
   },
   watch:{
 	drawColor:{
@@ -661,6 +759,36 @@ export default {
             this.stop()
             alert("直播已结束！")
             
+        }
+        else if(data['kind'] == 'hand'){
+            // do nothing
+        }
+        else if(data['kind'] == 'permit'){
+            if(data['msg'] == this.uid){
+                this.stopOtherPlay()
+                this.perimit = true
+            }
+            else{
+                console.log(data)
+                this.myImage = data['image']
+                this.stopOtherPlay()
+                this.otherHand = true
+                this.startPlayer3()
+                this.startPlayer4()
+            }
+        }
+        else if(data['kind'] == 'refuse'){
+            if(data['msg'] == this.uid){
+                this.permit = false
+                this.closeHand()
+                const h = this.$createElement;
+                this.$notify({
+                title: '消息',
+                message: h('i', { style: 'color: teal'}, '您的音视频权限已被教师关闭!')})
+            }
+            else{
+                this.stopOtherPlay()
+            }
         }
 		else{
 			this.msg = data['message']['message']

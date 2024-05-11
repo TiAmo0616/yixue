@@ -71,7 +71,7 @@ export default {
       <div class="hello">  
         <div id="topTitle">
           <p id="logintext">登录</p>
-          <p>注册</p>
+          <p @click="register">注册</p>
         </div> 
         
         

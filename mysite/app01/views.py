@@ -771,3 +771,12 @@ def endClass(request):
     course.zhibo = '暂无直播'
     course.save()
     return JsonResponse({'status': 'success'})
+
+
+def showzhiboInfo(request):
+
+    name = request.POST.get('username')
+    user = userInfo.objects.filter(name=name).first()
+    myName = request.POST.get('myName')
+    me = userInfo.objects.filter(name=myName).first()
+    return JsonResponse({'status': 'success','img':"http://127.0.0.1:8000/static/"+user.img,'myImage':"http://127.0.0.1:8000/static/"+me.img})

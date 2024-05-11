@@ -52,4 +52,5 @@ urlpatterns = [
     path('saveProblems/',views.saveProblems),
     path('beginClass/',views.beginClass),
     path('endClass/',views.endClass),
+    path('showzhiboInfo/',views.showzhiboInfo),
 ]

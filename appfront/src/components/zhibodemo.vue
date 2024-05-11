@@ -98,10 +98,18 @@
                                 <button v-show="!this.boardShow" @click="openBoard">使用白板</button>
                                 <button v-show="this.boardShow" @click="closeBoard">关闭白板</button>
                             </el-col>
-                            <el-col :span="4">
+                            <el-col :span="2">
                                 <button @click="dianming">随机点名</button>    
                             </el-col>
-                            <el-col :span="4">
+                            <el-col :span="2">
+                                <button @click="chat">聊天</button>    
+                            </el-col>
+                            <el-col :span="2">
+                                <el-badge :value="this.handsNum" class="item">
+                                    <el-button size="small" @click="seeHands">举手</el-button>
+                                </el-badge>                     
+                            </el-col>
+                            <el-col :span="2">
                                 <button @click="stop">结束直播</button>    
                             </el-col>
                         </el-row>
@@ -127,7 +135,7 @@
                         <video id='studentVideo' controls autoplay ></video>
                         </div>
                         <div v-show="!this.have2">
-                            <img src="../assets/s.jpg" width="100%" height="200px">
+                            <img :src="studentImage" width="100%" height="200px">
                         </div>
                         <div>
                             <video v-show="false" id='studentAudio' controls autoplay >
@@ -135,7 +143,26 @@
                         </video> 
                         </div>
                     </div>
-                    
+                    <!-- 聊天区域，举手也在这里 -->
+                    <div v-show="handShow">
+                        <div v-show="!agree">
+                            <div  v-for="student in students" :key="student.msg">
+                                <el-row>
+                                    {{ student.msg }}
+                                    <button  @click="agreehand(student)">同意</button>
+                                    <button @click="closeHand(student)">取消</button>
+                                </el-row>
+                            </div> 
+                        </div>
+                        <div v-show="agree">
+                            正在与{{ lianmaistudent }}连麦
+                            <button @click="closeHand(lianmaistudent)">关闭</button>
+                        </div>
+                    </div>
+                    <!-- 不举手就默认是聊天 -->
+                    <div v-show="!handShow">
+
+                    </div>
 
                 </div>
             </el-col>
@@ -197,7 +224,12 @@ export default {
 		showctx:'',
         boardShow:false,
 
-        dianmingShow:false
+        dianmingShow:false,
+        handsNum:0,
+        students:[],
+        handShow:false,
+        lianmaistudent:'',
+        studentImage:'',
     }
   },
   created(){
@@ -507,10 +539,23 @@ export default {
         console.log('学生摄像头当前状态==>', state)
       })
     },
-    agreehand(){
-        this.agree = true
-        this.PlayStudentCamera()
-        this.PlayStudentMIC()
+    agreehand(student){
+        if(! this.agree){
+            this.agree = true
+            this.drawws.send("permit,"+student['msg']+","+student['image']+",")
+            this.lianmaistudent = student.msg
+            this.studentImage = student['image']
+            this.handsNum = this.handsNum-1
+            this.PlayStudentCamera()
+            this.PlayStudentMIC()
+        }
+        else{
+            const h = this.$createElement;
+                this.$notify({
+                title: '温馨提示',
+                message: h('i', { style: 'color: teal'}, '当前有学生正在连麦！')})
+        }
+        
     },
     PlayStudentMIC(){
         this.pusher2 = new ZLMRTCClient.Endpoint({
@@ -542,8 +587,12 @@ export default {
       })
     },
     
-    closeHand(){
+    closeHand(student){
         this.agree = false
+        this.students.splice(this.students.indexOf(student), 1)
+        
+        this.have2 = false
+        this.drawws.send('refuse,'+student)
         if(this.pusher1){
             this.pusher1.close()
             this.pusher1 = null
@@ -610,6 +659,12 @@ export default {
     dianming(){
         this.drawws.send("dianming,")
     },
+    seeHands(){
+        this.handShow = true
+    },
+    chat(){
+        this.handShow = false
+    }
   },
   
   watch:{
@@ -701,6 +756,7 @@ export default {
 					this.drawctx.lineTo(this.msg[4],this.msg[5])
 					this.drawctx.stroke();
 				}
+
 				else{
 					if(this.msg[0]=="draw"||this.msg[0]=="stop"){
 						if(this.isDraw==1&&this.msg[0]!='stop'){
@@ -728,12 +784,17 @@ export default {
         else if(data['kind'] == 'open'){
             this.boardShow = true
         }
-        else if(data['kind'] == 'over'){
-            
+        else if(data['kind'] == 'over' || data['kind'] == 'permit' || data['kind'] =='refuse'){
+            // do nothing
         }
         else if(data['kind'] == 'dianming'){
             //this.dianmingShow = true
             alert("随机点名选中"+data['msg'])
+        }
+        else if(data['kind'] == 'hand'){
+            this.students.push({'msg':data['msg'],'image':data['image']})
+            this.handsNum = this.handsNum+1
+            
         }
 		else{
 			this.msg = data['message']['message']

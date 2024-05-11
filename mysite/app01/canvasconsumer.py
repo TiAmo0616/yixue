@@ -16,7 +16,7 @@ users=[]
 History = {'demo':[]}
 userList={}#roomNum:[在线的人]
 channel_name_list={}
-
+studentImages={}
 class ChatConsumer1(WebsocketConsumer):
     def websocket_connect(self, message):
         self.accept()
@@ -50,6 +50,12 @@ class ChatConsumer1(WebsocketConsumer):
         elif msg[0] == 'dianming':
             one = randomSelect(group)
             async_to_sync(self.channel_layer.group_send)(group, {"type": "dianming", "message": {'msg':one}})
+        elif msg[0] == 'hand':
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "askHand", "message": {'msg':msg[1],'image':msg[2]}})
+        elif msg[0] == 'permit':
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "permitHand", "message": {'msg':msg[1],'image':msg[2]}})
+        elif msg[0] == 'refuse':
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "refuseHand", "message": {'msg':msg[1]}})
         else:
 
             if msg[0] == 'clear':
@@ -107,6 +113,15 @@ class ChatConsumer1(WebsocketConsumer):
 
     def dianming(self,event):
         self.send(json.dumps({'kind': "dianming",'msg': event['message']['msg']}))  # 给组内所有人回复
+
+    def askHand(self,event):
+        self.send(json.dumps({'kind': "hand", 'msg': event['message']['msg'],'image':event['message']['image']}))
+
+    def permitHand(self,event):
+        print((event['message']))
+        self.send(json.dumps({'kind': "permit", 'msg': event['message']['msg'],'image':event['message']['image']}))
+    def refuseHand(self,event):
+        self.send(json.dumps({'kind': "refuse", 'msg': event['message']['msg']}))
 
 def randomSelect(cid):
     students = sc.objects.filter(cid=cid)
