@@ -10,9 +10,9 @@ dnaghanglan.vue
 
 mainPage.vue
 
-login.vue
+~~login.vue~~
 
-register.vue
+~~register.vue~~
 
 userInfo.vue
 
