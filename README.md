@@ -6,7 +6,7 @@
 
 前端界面设计：
 
-dnaghanglan.vue
+~~dnaghanglan.vue~~
 
 mainPage.vue
 
