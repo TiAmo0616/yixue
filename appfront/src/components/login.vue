@@ -12,17 +12,17 @@
       <div class="hello">  
         <div id="topTitle">
           <p id="logintext">登录</p>
-          <p>注册</p>
+          <button @click="register" ><p>注册</p></button>
         </div> 
         
         
         <form @submit.prevent="login" id="login">  
           <div class="form-group">  
-            <label for="username"><img src="../assets/image/login/userlogin.svg" alt="logo" width="30px" /></label>  
+            <label for="username"><img src="../assets/image/login/userlogin.svg" alt="logo" width="50px" /></label>  
             <input type="text" id="username"  placeholder="请输入用户名" v-model="username" required> 
           </div>  
           <div class="form-group">  
-            <label for="password"><img src="../assets/image/login/key.svg" alt="logo" width="30px" /></label>  
+            <label for="password"><img src="../assets/image/login/key.svg" alt="logo" width="50px" /></label>  
             <input type="password" id="password" placeholder="请输入密码" v-model="password" required>
           </div>         
           <button id="btn" type="submit" >登录</button>
@@ -55,8 +55,11 @@ export default {
         .then(response =>{
             console.log(response.data)
             if(response.data.status == 'success'){
+                          // 一、使用本地存储localStorage实现登录存储的功能、
+                
                 const role = response.data.role
                 this.$store.commit('login',{username:this.username,role:role});
+                localStorage.setItem('userInfo', {username:this.username,role:role});
                 this.$router.push({ name: 'mainpage' ,params:{"username":this.username,'role':role}});
             }
             else if(response.data.status == 'unmatch'){alert("用户名密码错误！")}
@@ -93,15 +96,16 @@ position: absolute;
 
 #contents{
   background:rgba(255,255,255,0.6);
-  position:relative;
   width: 70%;
-  height: 450px;
-  top: 0;left: 0;right: 0;bottom: 0;margin: auto;
+  height: 80vh;
+  
+  left: 0;right: 0;margin: auto;
+  margin-top: 10vh;
   
 }
 
 .hello p{
-  font-size: 20px;
+  font-size: 30px;
   color: black;
   
 }
@@ -116,10 +120,9 @@ position: absolute;
 }
 
 input{
-  padding: 10px;
+  padding: 20px;
   border: 1px solid #DCDFE6;
-  margin: 15px;
-  width: 500px;
+  width: 60%;
   box-sizing: border-box;
   vertical-align:middle;
   margin: 20px;
@@ -132,7 +135,11 @@ outline:1px solid #409EFF;
 
 input::placeholder{
   color: #C0C4CC;
-  font-size: 14px;
+  font-size: 20px;
+}
+
+.form-group{
+  margin:20px
 }
 
 label{
@@ -147,15 +154,24 @@ form{
 #btn{
   background-color: #FAAF43;
   color: black;
-  width: 550px;
-  height: 40px;
+  width: 60%;
+  height: 70px;
   border: 1px;
-  font-size: 15px;
+  font-size: 25px;
   font-weight: bold;
   margin-top: 50px;
   border-radius: 10px;
   
 }
+
+#logintext{
+  border-bottom: 5px solid #FAAF43;
+}
+
+.hello button{
+  border :0;
+}
+</style>
 
 #logintext{
   border-bottom: 5px solid #FAAF43;
