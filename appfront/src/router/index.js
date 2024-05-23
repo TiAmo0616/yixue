@@ -20,6 +20,8 @@ import myWork from '@/components/myWork'
 import zhibodemo from '@/components/zhibodemo'
 import teacherzhibo from '@/components/teacherzhibo'
 import studentzhibo from '@/components/studentzhibo'
+import dianbo from '@/components/dianbo'
+
 Vue.use(Router)
 Vue.use(Vuex);
 const state = {
@@ -161,5 +163,12 @@ export default new Router({
       component: studentzhibo,
       props: true
     },
+    {
+      path: '/dianbo',
+      name: 'dianbo',
+      component: dianbo,
+      props: true
+    },
+
   ]
 })

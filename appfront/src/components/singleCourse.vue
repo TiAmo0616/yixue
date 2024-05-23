@@ -10,7 +10,7 @@
               
         {{ course.cname }}
         课程码{{ this.cid }}     
-                
+        {{ course.introduction }}
         学生人数：{{ course.stuNum }}
         学时:{{ course.xueshi }}
         {{ course.status }}
@@ -24,10 +24,57 @@
             <el-tab-pane label="作业" name="second">作业</el-tab-pane>
             <el-tab-pane label="问答" name="third">答疑</el-tab-pane>
             <el-tab-pane label="学生管理" name="fourth">学生管理</el-tab-pane>
+            <el-tab-pane label="直播回放" name="fifth">直播回放</el-tab-pane>
         </el-tabs>
     </div>
     <!-- 学习资源（录播课程） -->
     <div v-show="firstshow">
+        <div class="block">
+            <el-tree
+            :data="data"
+            node-key="id"
+            default-expand-all
+            :expand-on-click-node="false">
+            <span class="custom-tree-node" slot-scope="{ node, data }">
+                <!-- <span>{{ node.label }}</span> -->
+                <input v-if="isLabelEditing&&editId == node.id" type="text" v-model="data.label" />
+                <span v-else>{{ node.label }}</span>
+                <!-- <span v-if="!isEditing">{{ node.label }}</span>
+                <input v-else type="text" v-model="data.label" /> -->
+                <el-button v-if="isLabelEditing&&editId == node.id" type="text" size="mini" @click="editLabel(node,data)">确认</el-button>
+                <el-button v-else type="text" size="mini" @click="startEdit(node)">编辑</el-button>
+                <span>
+                <el-button
+                    type="text"
+                    size="mini"
+                    @click="append(data)">
+                    增加子级目录
+                </el-button>
+                <el-button
+                    type="text"
+                    size="mini"
+                    @click="remove(node, data)">
+                    删除目录
+                </el-button>
+                <el-button
+                    type="text"
+                    size="mini"
+                    @click="upload(data)">
+                    上传文件
+                </el-button>
+                
+              
+                </span>
+            </span>
+            </el-tree>
+        </div>
+
+
+        <div v-show="isUpload">
+            <input type="file" ref="videoInput" @change="handleFileChange" />
+            <button @click="uploadVideo">上传资源</button>
+        </div>
+        
         
     </div>
     <!-- 作业 -->
@@ -123,6 +170,27 @@
     <div v-show="fourthshow">
 
     </div>
+    <!-- 直播回放 -->
+    <div v-show="fifthshow">
+        <el-row v-for="date in mp4Files" :key="date.period">
+            {{ date.period }}
+            <el-row v-for="mp4 in date.records" :key="mp4.path">
+                {{ mp4.rname }}
+                <button @click="dowloadFile(mp4.path,mp4.rname)">下载</button>
+                <button @click="watchFile(mp4.path)">观看</button>
+                <button @click="rename(mp4.rname)">重命名</button>
+            </el-row>
+        </el-row>
+        <!-- 重命名视频文件的输入框 -->
+        <div v-show="isRenaming">
+            <el-input
+            placeholder="请输入内容"
+            v-model="newrname"
+            clearable>
+            </el-input>
+            <button @click="submitRename">确定</button>
+        </div>
+    </div>
 
 </div>
 
@@ -131,6 +199,7 @@
 <script>
 import axios from 'axios'
 import Daohanglan from './daohanglan.vue';
+
 export default {
 
   name: 'singleCourse',
@@ -150,6 +219,7 @@ export default {
     }
   },
   data () {
+    //const data=[{id:0,label:'学习资源',children:[],path:''}]
     return {
       course:'',
       activeName: 'first',
@@ -157,6 +227,7 @@ export default {
       sencondshow:false,
       thirdshow:false,
       fourthshow:false,
+      fifthshow:false,
       works:[],
       fabushow:false,
       new_wname:'',
@@ -164,8 +235,23 @@ export default {
       newend:'',
       problems:[],
       tiwenShow:false,
-      new_pinfo:''
+      new_pinfo:'',
 
+      mp4Files:'',
+      paths:[],
+      rootpath:'',
+      isRenaming:false,
+      newrname:'',
+      oldrname:'',
+
+      //data: JSON.parse(JSON.stringify(data)),
+      data:[],
+      isEditing:false,
+      isUpload:false,
+      currentData:null,
+      beginId:0,
+      editId:'',
+      isLabelEditing:false,
 
     }
   },
@@ -186,11 +272,248 @@ export default {
       .catch(error => {
         console.error('Error:', error);
       });
-      
+      this.getmp4List()
+      this.searchLM()
   },
   
   methods: {
-    
+    searchLM(){
+        axios.post("http://127.0.0.1:8000/searchLM/",{'cid':this.cid},{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+        .then(response =>{
+            console.log(response.data)
+            if(response.data.status == 'success'){
+                console.log(response.data)
+                this.data = response.data.res
+                this.beginId = response.data.maxId
+                console.log(this.data)
+            }
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+        });
+    },
+    upload(data){
+        this.isUpload = true
+        this.currentData = data
+        
+    },
+    startEdit(node) {
+      this.isEditing = true;
+      this.isLabelEditing = true
+      this.editId = node.id
+    },
+    editLabel(node, data) {
+      this.isEditing = false;
+      this.isLabelEditing = false;
+      console.log(node)
+      axios.post("http://127.0.0.1:8000/editDirectory/",{'cid':this.cid,'id':node.data.did,'label':node.label},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                    console.log(response.data)
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+            });
+
+    },
+    //只是创建目录
+    append(data) {
+        let id = this.beginId++
+        axios.post("http://127.0.0.1:8000/appendLM/",{'cid':this.cid,'id':id,label:'目录'+id,'pdid':data.did,'path':''},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                    console.log(response.data)
+                    const newChild = { id: id, label: '目录'+id, children: [],path:'' };
+                    if (!data.children) {
+                        this.$set(data, 'children', []);
+                    }
+                    data.children.push(newChild);
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+            });
+
+
+        
+      },
+      //上传视频作为子目录
+      appendVideo(data,rname,path) {
+        let id = this.beginId++
+        console.log(data)
+        axios.post("http://127.0.0.1:8000/appendLM/",{'cid':this.cid,'id':id,label:rname,'pdid':data.did,'path':path},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                    console.log(response.data)
+                    const newChild = { id: id, label: rname, children: [],path:path };
+                    if (!data.children) {
+                    this.$set(data, 'children', []);
+                    }
+                    data.children.push(newChild);
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+            });
+
+        
+      },
+    handleFileChange(event) {
+      this.videoFile = event.target.files[0];
+    },
+    remove(node, data) {
+
+        axios.post("http://127.0.0.1:8000/deleteLM/",{'cid':this.cid,'id':data.did},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                    console.log(response.data)
+                    const parent = node.parent;
+                    const children = parent.data.children || parent.data;
+                    const index = children.findIndex(d => d.did === data.did);
+                    children.splice(index, 1);
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+            });
+
+
+
+      },
+      renderContent(h, { node, data, store }) {
+        return (
+          <span class="custom-tree-node">
+            <span>{node.label}</span>
+            <span>
+              <el-button size="mini" type="text" on-click={ () => this.append(data) }>Append</el-button>
+              <el-button size="mini" type="text" on-click={ () => this.remove(node, data) }>Delete</el-button>
+            </span>
+          </span>);
+      },
+    uploadVideo() {
+      if (!this.videoFile) {
+        alert('请先选择视频文件。');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('video', this.videoFile);
+
+      axios.post("http://127.0.0.1:8000/uploadVideo/",formData,{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        if(response.data.status == 'success'){
+            alert("上传成功！")
+            this.isUpload = false
+            console.log(this.currentData)
+            this.appendVideo(this.currentData,response.data.rname,response.data.path)
+        }
+         
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("上传失败！请重试！")
+      });
+      
+    },
+    rename(oldrname){
+        this.isRenaming = true
+        this.oldrname = oldrname
+    },
+    submitRename(){
+        axios.post("http://127.0.0.1:8000/reName/",{'cid':this.cid,'rname':this.oldrname,'newrname':this.newrname},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                    this.isRenaming = false
+                    this.getmp4List()
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    },
+    watchFile(path){
+        this.$router.push({ name: 'dianbo' ,params:{"path":path,'cid':this.cid}})
+    },
+    getmp4List(){
+        axios.post("http://127.0.0.1:8000/getRecordsList/",{'cid':this.cid},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                    this.mp4Files = response.data.res
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    },
+    dowloadFile(filepath,rname){
+        const downloadUrl = 'https://zlm.com/index/api/downloadFile?file_path='+filepath
+     
+      fetch(downloadUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = rname; // 指定下载文件的名称
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(error => console.error('下载失败:', error));
+    },
     workback(){
         this.fabushow = false
         this.new_wname = ''
@@ -199,6 +522,7 @@ export default {
     },
       handleClick(tab) {
         if(tab.name == 'first'){
+            this.searchLM()
             this.firstshow = true
             this.sencondshow = false
             this.thirdshow = false
@@ -231,11 +555,18 @@ export default {
             this.fourthshow = false
             this.showProblem('all')
         }
-        else{
+        else if(tab.name == 'fourth'){
             this.firstshow = false
             this.sencondshow = false
             this.thirdshow = false
             this.fourthshow = true
+        }
+        else{
+            this.firstshow = false
+            this.sencondshow = false
+            this.thirdshow = false
+            this.fourthshow = false
+            this.fifthshow = true
         }
       },
       showWork(status){
@@ -391,4 +722,5 @@ export default {
   flex-direction: column;
   justify-content: space-between;
 }
+
 </style>

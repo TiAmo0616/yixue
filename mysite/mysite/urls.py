@@ -53,4 +53,14 @@ urlpatterns = [
     path('beginClass/',views.beginClass),
     path('endClass/',views.endClass),
     path('showzhiboInfo/',views.showzhiboInfo),
+    path('updateRecords/',views.updateRecords),
+    path('getRecordsList/',views.getRecordsList),
+    path('reName/',views.reName),
+    path('uploadVideo/',views.uploadVideo),
+    path('searchLM/',views.searchLM),
+    path('appendLM/',views.appendLM),
+    path('deleteLM/',views.deleteLM),
+    path('editDirectory/',views.editDirectory),
+
+
 ]

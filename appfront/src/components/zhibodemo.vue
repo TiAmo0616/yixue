@@ -112,6 +112,10 @@
                             <el-col :span="2">
                                 <button @click="stop">结束直播</button>    
                             </el-col>
+                            <el-col :span="2">
+                                <button v-show="! isRecording" @click="record">录制</button>  
+                                <button v-show="isRecording" @click="stopRecord">停止录制</button>    
+                            </el-col>
                         </el-row>
                 </div>
             </el-col>
@@ -230,6 +234,9 @@ export default {
         handShow:false,
         lianmaistudent:'',
         studentImage:'',
+
+        isRecording:false,
+
     }
   },
   created(){
@@ -252,11 +259,12 @@ export default {
   methods:{
     startPlay () {
        
-        
+        const deskUrl = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"desk&type=push"
       this.player = new ZLMRTCClient.Endpoint({
         element: document.getElementById('selfvideo'), // video 标签
         debug: false, // 是否打印日志
-        zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test&type=push", //流地址
+        zlmsdpUrl:deskUrl,
+        //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test&type=push", 
         simulcast: false,
         useCamera: !this.usescreen,
         audioEnable: true,
@@ -308,10 +316,12 @@ export default {
       
     },
     startPlayCamera(){
+        const cameraUrl = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"teacherCamera&type=push"
         this.player1 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('cameravideo'), // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test1&type=push", //流地址
+            zlmsdpUrl: cameraUrl,
+          //  zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test1&type=push", //流地址
             simulcast: false,
             useCamera: this.useCamera,
             audioEnable: false,
@@ -353,10 +363,12 @@ export default {
     });
     },
     startPlayMIC(){
+        const MICUrl = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"teacherMIC&type=push"
         this.player2 = new ZLMRTCClient.Endpoint({
             element: '', // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test2&type=push", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test2&type=push", //流地址
+            zlmsdpUrl:MICUrl,
             simulcast: false,
             useCamera: false,
             audioEnable: this.audioEnable,
@@ -507,10 +519,12 @@ export default {
         this.player = null
     },
     PlayStudentCamera(){
+        const studentUrl1 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentCamera&type=push"
         this.pusher1 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('studentVideo'), // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentCamera&type=play", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentCamera&type=play", //流地址
+            zlmsdpUrl:studentUrl1,
             simulcast: false,
             useCamera: false,
             audioEnable: true,
@@ -558,10 +572,12 @@ export default {
         
     },
     PlayStudentMIC(){
+        const studentUrl2 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentMIC&type=push"
         this.pusher2 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('studentAudio'), // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentMIC&type=play", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentMIC&type=play", //流地址
+            zlmsdpUrl: studentUrl2,
             simulcast: false,
             useCamera: false,
             audioEnable: true,
@@ -664,7 +680,91 @@ export default {
     },
     chat(){
         this.handShow = false
-    }
+    },
+    record(){
+        axios.get("https://zlm.com/index/api/startRecord?secret=x5mji1hHaDRVAsMCYUIrChqhmcgbozR1&type=1&vhost=192.168.44.129&app=live&stream="+this.cid+"desk",{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                this.isRecording = true
+            })
+
+            .catch(error => {
+                
+                console.error('Error:', error);
+            });
+    },
+    stopRecord(){
+        axios.get("https://zlm.com/index/api/stopRecord?secret=x5mji1hHaDRVAsMCYUIrChqhmcgbozR1&type=1&vhost=192.168.44.129&app=live&stream="+this.cid+"desk",{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                this.isRecording = false
+                this.getFileList()
+            })
+
+            .catch(error => {
+                
+                console.error('Error:', error);
+            });
+    },
+    getDate(){
+        var currentDate = new Date();
+        var year = currentDate.getFullYear(); // 获取完整的年份
+        var month = currentDate.getMonth() + 1; // 获取月份，注意 JavaScript 中月份是从 0 开始计数的
+        var day = currentDate.getDate(); // 获取日期
+        if(month<10){
+            month = '0'+month
+        }
+        if(day.length<10){
+            day = '0'+day
+        }
+        let today = year+'-'+month+'-'+day
+        return today
+
+    },
+    getFileList(){//获取今天的直播录屏
+        let today = this.getDate()
+        axios.get("https://zlm.com/index/api/getMp4RecordFile?secret=x5mji1hHaDRVAsMCYUIrChqhmcgbozR1&vhost=192.168.44.129&app=live&stream="+this.cid+"desk&customized_path=&period="+today,{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                let rootPath = response.data.data.rootPath
+                let paths = response.data.data.paths
+                this.updateRecord(rootPath,paths)//更新一下数据库
+            })
+
+            .catch(error => {
+                
+                console.error('Error:', error);
+            });
+    },
+    updateRecord(rootPath,paths){
+        let today = this.getDate()
+        axios.post("http://127.0.0.1:8000/updateRecords/",{'cid':this.cid,'rootPath':rootPath,'paths':JSON.stringify(paths),'period':today},{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        
+         
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+
+    },
   },
   
   watch:{

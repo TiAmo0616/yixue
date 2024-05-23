@@ -63,8 +63,8 @@ export default {
         console.log(response.data)
         if(response.data.status == 'success'){
           this.courses = response.data.courses
-          
-          if(response.data.zhibo){
+          console.log(response.data.zhibo.length)
+          if(response.data.zhibo.length>0){
             this.zhibocourse = response.data.zhibo[0]
             alert(this.zhibocourse+"正在直播!")
           }

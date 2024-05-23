@@ -79,3 +79,17 @@ class problem(models.Model):
     ans = models.TextField(default='')
     cid = models.CharField(max_length=32,default='')
     jh = models.CharField(max_length=32,default='0')
+
+
+class records(models.Model):
+    cid = models.CharField(max_length=32,default='')#stream的名称
+    period = models.CharField(max_length=32,default='')
+    path = models.CharField(max_length=128,default='')
+    rname = models.CharField(max_length=32,default='')#教师可以自定义视频的名字
+
+class learningMaterials(models.Model):
+    cid = models.CharField(max_length=32, default='')
+    did = models.CharField(max_length=32, default='')
+    label = models.CharField(max_length=64, default='')
+    parentdid = models.CharField(max_length=32, default='')
+    path =  models.CharField(max_length=128,default='')

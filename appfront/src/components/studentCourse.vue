@@ -27,7 +27,15 @@
     </div>
     <!-- 学习资源（录播课程） -->
     <div v-show="firstshow">
-        
+      <el-row v-for="date in mp4Files" :key="date.period">
+            {{ date.period }}
+            <el-row v-for="mp4 in date.records" :key="mp4.path">
+                {{ mp4.rname }}
+                <button @click="dowloadFile(mp4.path,mp4.rname)">下载</button>
+                <button @click="watchFile(mp4.path)">观看</button>
+                <button @click="rename(mp4.rname)">重命名</button>
+          </el-row>
+      </el-row>
     </div>
      <!-- 作业 -->
      <div v-show="sencondshow">
@@ -88,6 +96,13 @@ export default {
       teacher:'',
       zhibo:'',
       zhiboShow:false,
+      firstshow:true,
+      sencondshow:false,
+      thirdshow:false,
+      fourthshow:false,
+      mp4Files:'',
+      paths:[],
+      rootpath:'',
 
     }
   },
@@ -115,9 +130,46 @@ export default {
       .catch(error => {
         console.error('Error:', error);
       });
-      
+      this.getmp4List()
   },
   methods:{
+    watchFile(path){
+        this.$router.push({ name: 'dianbo' ,params:{"path":path,'cid':this.cid}})
+    },
+    getmp4List(){
+        axios.post("http://127.0.0.1:8000/getRecordsList/",{'cid':this.cid},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                    this.mp4Files = response.data.res
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    },
+    dowloadFile(filepath,rname){
+        const downloadUrl = 'https://zlm.com/index/api/downloadFile?file_path='+filepath
+     
+      fetch(downloadUrl)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = rname; // 指定下载文件的名称
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(error => console.error('下载失败:', error));
+    },
     write(wid){
         this.$router.push({ name: 'homework' ,params:{"wid":wid,'cid':this.cid}})
     },

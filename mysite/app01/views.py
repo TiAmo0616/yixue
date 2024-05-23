@@ -1,7 +1,8 @@
+import io
 import json
 import os
 from datetime import datetime, timedelta
-
+import paramiko
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -24,8 +25,8 @@ from app01.models import question
 from app01.models import s_q
 
 from app01.models import problem
-
-
+from app01.models import records
+from app01.models import learningMaterials
 def generate_course_code(index):
     course_code = str(uuid.uuid4().hex)[:index]  # 生成一个32位的UUID，并截取前8位作为课程码
     return course_code
@@ -780,3 +781,167 @@ def showzhiboInfo(request):
     myName = request.POST.get('myName')
     me = userInfo.objects.filter(name=myName).first()
     return JsonResponse({'status': 'success','img':"http://127.0.0.1:8000/static/"+user.img,'myImage':"http://127.0.0.1:8000/static/"+me.img})
+
+def updateRecords(request):
+    cid = request.POST.get('cid')
+    rootPath = request.POST.get('rootPath')
+    paths = json.loads(request.POST.get('paths'))
+    period = request.POST.get('period')
+    paths.sort()
+    print(rootPath)
+    print(paths)
+    record = records()
+    record.cid = cid
+    record.period = period
+    record.path = rootPath+paths[-1]
+    record.rname = period+":"+paths[-1]
+    record.save()
+    return JsonResponse({'status': 'success'})
+
+def getRecordsList(request):#[{'period':2024-05-20','records':[{},{}]},{}]
+    cid = request.POST.get('cid')
+    rs = records.objects.filter(cid=cid)
+    # res0=[]
+    # for record in rs:
+    #     period = record.period
+    #     path = record.path
+    #     res0.append({'period':period,'rname':record.rname,'path':path})
+    res=[]
+    flag = True
+    for record in rs:
+        period = record.period
+        flag = True
+        for i in res:
+            if i['period'] == period:
+                flag = False
+                i['records'].append({'period':period,'rname':record.rname,'path':record.path})
+        if flag:
+            res.append({'period':period,'records':[{'period':period,'rname':record.rname,'path':record.path}]})
+
+
+
+    return JsonResponse({'status': 'success','res':res})
+
+def reName(request):
+    cid = request.POST.get('cid')
+    newrname = request.POST.get('newrname')
+    rname = request.POST.get('rname')
+    rec = records.objects.filter(cid=cid,rname=rname).first()
+    rec.rname = newrname
+    rec.save()
+    return JsonResponse({'status': 'success'})
+
+def uploadVideo(request):
+    video_file = request.FILES['video']
+    file_contents = video_file.read()  # 读取文件内容
+    file_name = video_file.name  # 获取文件原始名称
+    transport = paramiko.Transport(("192.168.44.129", 22))
+    transport.connect(username="xu", password="11280616")
+    sftp = paramiko.SFTPClient.from_transport(transport)
+
+    try:
+        sftp.putfo(io.BytesIO(file_contents), "/home/xu/demo1/ZLMediaKit/release/linux/Debug/www/lubo/"+file_name)
+        return JsonResponse({'status': 'success','rname':file_name,'path':"/home/xu/demo1/ZLMediaKit/release/linux/Debug/www/lubo/"+file_name})
+    except Exception as e:
+        return JsonResponse({'status': 'fail'})
+    finally:
+        sftp.close()
+        transport.close()
+
+
+def appendLM(request):
+    cid = request.POST.get('cid')
+    did  = request.POST.get('id')
+    label = request.POST.get('label')
+    parentdid = request.POST.get('pdid')
+    path = request.POST.get('path')
+    lm = learningMaterials()
+    lm.cid = cid
+    lm.did = did
+    lm.label = label
+    lm.parentdid = parentdid
+    lm.path = path
+    lm.save()
+    return JsonResponse({'status': 'success'})
+
+def deleteLM(request):
+    cid = request.POST.get('cid')
+    did = request.POST.get('id')
+    lm = learningMaterials.objects.filter(cid=cid,did=did).first()
+    lm.delete()
+    operateLM(cid)
+    return JsonResponse({'status': 'success'})
+
+def searchLM(request):
+    cid = request.POST.get('cid')
+    lmTree = learningMaterials.objects.filter(cid=cid)
+    res0=[]
+    for lm in lmTree:
+        temp={}
+        temp['did'] = lm.did
+        temp['label'] = lm.label
+        temp['children'] = []
+        temp['path'] = lm.path
+        pdid  = lm.parentdid
+        temp['pdid'] = pdid
+        res0.append(temp)
+    res0.sort(key=lambda x:x['did'])
+    res1=[{'did':'0','label':'学习资源','children':[],'path':''}]
+    for i in res0:
+        pdid = i['pdid']
+        for j in res1:
+            if j['did'] == pdid:
+                j['children'].append(i)
+                res1.append(i)
+
+    res1.reverse()
+    for i in range(len(res1)):
+        for j in range(i+1,len(res1)):
+            if res1[i]['pdid'] == res1[j]['did']:
+                for k in range(len(res1[j]['children'])):
+                    if res1[j]['children'][k]['did'] == res1[i]['did']:
+                        res1[j]['children'][k] = res1[i]
+
+
+        # if i not in res:
+        #     lm = learningMaterials.objects.filter(cid=cid,did=i['id']).first()
+        #     lm.delete()
+    if len(res0)>0:
+        maxId = res0[-1]['did']
+    else:
+        maxId = 0
+
+    return JsonResponse({'status': 'success','res':[res1[-1]],'maxId':int(maxId)+1})
+
+def operateLM(cid):
+    lmTree = learningMaterials.objects.filter(cid=cid)
+    res0 = []
+    for lm in lmTree:
+        temp = {}
+        temp['id'] = lm.did
+        temp['label'] = lm.label
+        temp['children'] = []
+        temp['path'] = lm.path
+        pdid = lm.parentdid
+        temp['pdid'] = pdid
+        res0.append(temp)
+    res0.sort(key=lambda x: x['id'])
+    res = [{'id': '0', 'label': '学习资源', 'children': [], 'path': ''}]
+    for i in res0:
+        pdid = i['pdid']
+        for j in res:
+            if j['id'] == pdid:
+                j['children'].append(i)
+                res.append(i)
+        if i not in res:
+            lm = learningMaterials.objects.filter(cid=cid, did=i['id']).first()
+            lm.delete()
+
+def editDirectory(request):
+    cid = request.POST.get('cid')
+    did = request.POST.get('id')
+    label = request.POST.get('label')
+    lm = learningMaterials.objects.filter(cid=cid, did=did).first()
+    lm.label = label
+    lm.save()
+    return JsonResponse({'status': 'success'})

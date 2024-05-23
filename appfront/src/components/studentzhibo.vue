@@ -222,11 +222,12 @@ export default {
   methods:{
     startPlay () {
        
-        
+        const deskUrl = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"desk&type=play"
         this.player = new ZLMRTCClient.Endpoint({
             element: document.getElementById('selfVideo'), // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test&type=play", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test&type=play", //流地址
+            zlmsdpUrl:deskUrl,
             simulcast: false,
             useCamera: false,
             audioEnable: true,
@@ -285,10 +286,12 @@ export default {
       
     },
     startPlayer3(){
+        const student1 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentCamera&type=play"
         this.player3 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('myVideo'), // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentCamera&type=play", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentCamera&type=play", //流地址
+            zlmsdpUrl: student1,
             simulcast: false,
             useCamera: false,
             audioEnable: true,
@@ -322,10 +325,12 @@ export default {
 
     },
     startPlayer4(){
+        const studentUrl2 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentMIC&type=play"
         this.player4 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('myMIC'), // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentMIC&type=play", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentMIC&type=play", //流地址
+            zlmsdpUrl:studentUrl2,
             simulcast: false,
             useCamera: false,
             audioEnable: true,
@@ -357,10 +362,12 @@ export default {
 
     },
     startPlayCamera(){
+        const cameraUrl = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"teacherCamera&type=play"
         this.player1 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('cameraVideo'), // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test1&type=play", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test1&type=play", //流地址
+            zlmsdpUrl:cameraUrl,
             simulcast: false,
             useCamera: false,
             audioEnable: true,
@@ -392,10 +399,12 @@ export default {
 
     },
     startPlayMIC(){
+        const MICUrl = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"teacherMIC&type=play"
         this.player2 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('MICVideo'), // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test2&type=play", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=test2&type=play", //流地址
+            zlmsdpUrl:MICUrl,
             simulcast: false,
             useCamera: false,
             audioEnable: true,
@@ -464,10 +473,12 @@ export default {
     },
     pushCamera(){
         this.myCamera = true
+        const student1 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentCamera&type=push"
         this.pusher1 = new ZLMRTCClient.Endpoint({
             element: '', // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentCamera&type=push", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentCamera&type=push", //流地址
+            zlmsdpUrl:student1,
             simulcast: false,
             useCamera: true,
             audioEnable: false,
@@ -524,10 +535,12 @@ export default {
     },
     pushMIC(){
         this.myMIC = true
+        const studentUrl2 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentMIC&type=push"
         this.pusher2 = new ZLMRTCClient.Endpoint({
             element: '', // video 标签
             debug: false, // 是否打印日志
-            zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentMIC&type=push", //流地址
+            //zlmsdpUrl: "https://zlm.com/index/api/webrtc?app=live&stream=studentMIC&type=push", //流地址
+            zlmsdpUrl:studentUrl2,
             simulcast: false,
             useCamera: false,
             audioEnable: true,
