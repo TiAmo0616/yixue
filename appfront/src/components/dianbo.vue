@@ -11,7 +11,7 @@
 <script>
 export default {
   name: 'dianbo',
-  props: ['cid','path'],
+  props: ['cid','path','role'],
   data () {
     return {
       msg: 'Welcome to Your Vue.js App'
@@ -23,7 +23,13 @@ export default {
   },
   methods:{
     back(){
-        this.$router.push({ name: 'singleCourse' ,params:{'cid':this.cid}})
+        if(this.role == '学生'){
+            this.$router.push({ name: 'studentCourse' ,params:{'cid':this.cid}})
+        }
+        else{
+            this.$router.push({ name: 'singleCourse' ,params:{'cid':this.cid}})
+        }
+        
     }
   }
 }

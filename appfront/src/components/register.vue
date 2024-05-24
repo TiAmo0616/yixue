@@ -1,5 +1,5 @@
 <template>
-<div>
+<!-- <div>
     <div id="backgroundpic" ></div>
 
     <div id="contents">
@@ -42,7 +42,7 @@
         </form>  
       </div>
     </div>
-</div>
+</div> -->
 </template>
 
 <script>

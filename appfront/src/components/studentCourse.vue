@@ -23,19 +23,28 @@
             <el-tab-pane label="学习资源" name="first">学习资源</el-tab-pane>
             <el-tab-pane label="作业" name="second">作业</el-tab-pane>
             <el-tab-pane label="问答" name="third">问答</el-tab-pane>
+            <el-tab-pane label="直播回放" name="fifth">直播回放</el-tab-pane>
         </el-tabs>
     </div>
     <!-- 学习资源（录播课程） -->
     <div v-show="firstshow">
-      <el-row v-for="date in mp4Files" :key="date.period">
-            {{ date.period }}
-            <el-row v-for="mp4 in date.records" :key="mp4.path">
-                {{ mp4.rname }}
-                <button @click="dowloadFile(mp4.path,mp4.rname)">下载</button>
-                <button @click="watchFile(mp4.path)">观看</button>
-                <button @click="rename(mp4.rname)">重命名</button>
-          </el-row>
-      </el-row>
+      <div class="block">
+            <el-tree
+            :data="data"
+            node-key="id"
+            default-expand-all
+            :expand-on-click-node="false">
+            <span class="custom-tree-node" slot-scope="{ node, data }">
+                <span>{{ node.label }}</span>
+                <span v-show="data.path">
+                  
+                  <button @click="dowloadFile(data.path,data.label)">下载</button>
+                  <button @click="watchFile(data.path)">观看</button>
+              
+                </span>
+            </span>
+            </el-tree>
+        </div>
     </div>
      <!-- 作业 -->
      <div v-show="sencondshow">
@@ -63,6 +72,17 @@
             </el-row>
         </div>
      </div>
+      <!-- 直播回放 -->
+    <div v-show="fifthshow">
+      <el-row v-for="date in mp4Files" :key="date.period">
+            {{ date.period }}
+            <el-row v-for="mp4 in date.records" :key="mp4.path">
+                {{ mp4.rname }}
+                <button @click="dowloadFile(mp4.path,mp4.rname)">下载</button>
+                <button @click="watchFile(mp4.path)">观看</button>
+          </el-row>
+      </el-row>
+    </div>
 
 </div>
 </template>
@@ -100,9 +120,12 @@ export default {
       sencondshow:false,
       thirdshow:false,
       fourthshow:false,
+      fifthshow:false,
       mp4Files:'',
       paths:[],
       rootpath:'',
+
+      data:[]
 
     }
   },
@@ -131,10 +154,31 @@ export default {
         console.error('Error:', error);
       });
       this.getmp4List()
+      this.searchLM()
   },
   methods:{
+    searchLM(){
+        axios.post("http://127.0.0.1:8000/searchLM/",{'cid':this.cid},{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+        .then(response =>{
+            console.log(response.data)
+            if(response.data.status == 'success'){
+                console.log(response.data)
+                this.data = response.data.res
+                console.log(this.data)
+            }
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+        });
+    },
     watchFile(path){
-        this.$router.push({ name: 'dianbo' ,params:{"path":path,'cid':this.cid}})
+        this.$router.push({ name: 'dianbo' ,params:{"path":path,'cid':this.cid,'role':this.role}})
     },
     getmp4List(){
         axios.post("http://127.0.0.1:8000/getRecordsList/",{'cid':this.cid},{
@@ -178,7 +222,7 @@ export default {
             this.firstshow = true
             this.sencondshow = false
             this.thirdshow = false
-            this.fourthshow = false
+            this.fifthshow = false
         }
         else if(tab.name == 'second'){
             this.showWork('all')
@@ -201,18 +245,21 @@ export default {
             this.firstshow = false
             this.sencondshow = true
             this.thirdshow = false
-            this.fourthshow = false
+            this.fifthshow = false
         }else if(tab.name == 'third'){
             this.firstshow = false
             this.sencondshow = false
             this.thirdshow = true
-            this.fourthshow = false
+            this.fifthshow = false
         }
-        else{
+        else {
+          
             this.firstshow = false
             this.sencondshow = false
             this.thirdshow = false
-            this.fourthshow = true
+            this.fourthshow = false
+            this.fifthshow = true
+        
         }
       },
       showWork(status){

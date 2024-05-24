@@ -15,7 +15,7 @@ onlineHistory={}
 userList={}#roomNum:[在线的人]
 channel_name_list={}
 room_list = []
-ROOM = '1111111111111111'#只要用户登录就会进入,但是不提供聊天
+
 
 class ChatConsumer(WebsocketConsumer):
     def websocket_connect(self, message):
@@ -29,18 +29,13 @@ class ChatConsumer(WebsocketConsumer):
 
 
         '''每次重新建立socket连接的时候，都会把原来的close'''
-        if group == ROOM:#还没有加入任何一个聊天室的时候
-
-            async_to_sync(self.channel_layer.group_add)(group, self.channel_name)
-            async_to_sync(self.channel_layer.group_send)(group, {"type": "Room"})
-        else:
-            print(userList)
-            userList[group].append(username)
-            channel_name_list[username] = self.channel_name#为了在一个group里面找到@的人
-            async_to_sync(self.channel_layer.group_add)(group, self.channel_name)#加入group
-            async_to_sync(self.channel_layer.group_add)(ROOM, self.channel_name)#加入一个全局的group，使得一个用户创建和删除聊天室的时候，其余在线的用户都能被广播到消息
-            async_to_sync(self.channel_layer.group_send)(group, {"type": "exit", "name": userList[group]})#更新group的用户列表
-            async_to_sync(self.channel_layer.send)(self.channel_name,{"type":"getHistory",'message':chatHistory[group]})
+        userList.setdefault(group, []).append(username)
+        if group not in chatHistory:
+            chatHistory[group] = []
+        channel_name_list[username] = self.channel_name#为了在一个group里面找到@的人
+        async_to_sync(self.channel_layer.group_add)(group, self.channel_name)#加入group
+        async_to_sync(self.channel_layer.group_send)(group, {"type": "exit", "name": userList[group]})#更新group的用户列表
+        async_to_sync(self.channel_layer.send)(self.channel_name,{"type":"getHistory",'message':chatHistory[group]})
 
 
 
@@ -78,14 +73,12 @@ class ChatConsumer(WebsocketConsumer):
                 room_list.append(roomName)
                 chatHistory[roomName] = []
                 userList[roomName] = []
-                async_to_sync(self.channel_layer.group_send)(ROOM, {"type": "Room"})
 
         else:
             roomName = m['room']
             del chatHistory[roomName]
             del userList[roomName]
             room_list.remove(roomName)
-            async_to_sync(self.channel_layer.group_send)(ROOM, {"type": "deleteRoom",'room':roomName})
 
     def websocket_disconnect(self, message):
         group = self.scope['url_route']['kwargs'].get("group")

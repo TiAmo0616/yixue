@@ -147,7 +147,7 @@
                         </video> 
                         </div>
                     </div>
-                    <!-- 聊天区域，举手也在这里 -->
+                    <!-- 聊天区域，举手处理也在这里 -->
                     <div v-show="handShow">
                         <div v-show="!agree">
                             <div  v-for="student in students" :key="student.msg">
@@ -165,7 +165,36 @@
                     </div>
                     <!-- 不举手就默认是聊天 -->
                     <div v-show="!handShow">
-
+                        <div class="message" id="message" ref="message"> 
+                            <!-- 消息界面 -->
+                            <div class="newMessage" v-for="message in messages">
+                                <div class="message-info" v-if="!message.isSelf">
+                                    <div>
+                                    <span class="sender">{{ message.sender }}</span>
+                                    <span class="timestamp">{{ message.timestamp }}</span>
+                                    <div class="message-bubble-others">
+                                    {{ message.text }}
+                                    </div>
+                                    </div>
+                                    
+                                </div>
+                                <div v-else>
+                                    <div class="me">{{ message.timestamp }}</div>
+                                    <div class="message-bubble-me">
+                                        {{ message.text }}
+                                    </div>
+                                    
+                                </div> 
+                            </div>
+                        </div>
+                        
+                        <!-- 发送框 -->
+                        <div>
+                            <el-input type="textarea" :rows="4" placeholder="请输入内容" v-model="txt" class="inputtext">
+                            </el-input>
+                            <input type="button" class="send" value="发送" @click="sendMessage()">
+                        </div>
+                        
                     </div>
 
                 </div>
@@ -237,6 +266,10 @@ export default {
 
         isRecording:false,
 
+        txt: '',
+        messages:[],
+        socket:null,
+        users:[]
     }
   },
   created(){
@@ -255,8 +288,98 @@ export default {
         console.error('Error:', error);
       });
       this.start()
+      this.connect()
   },
   methods:{
+    scrollToBottom() {
+    this.$nextTick(() => {
+      const container = this.$refs.message;
+      container.scrollTop = container.scrollHeight;
+    });
+  },
+    connect(){
+      console.log(this.username)
+      this.socket = new WebSocket("ws://127.0.0.1:8000/"+this.uid+"/room"+this.cid+"/")
+      
+//       this.socket.onopen = (event)=>{
+
+//           axios.post("http://127.0.0.1:8000/api/getHistory/",{"roomName":this.roomNum,"userName":this.username,"num":100},
+//       {
+//       headers: {
+//         'Content-Type': 'multipart/form-data'
+//       }
+//   })
+//       .then(response =>{
+//           console.log(response.data)
+//           this.history = response.data.history
+//           this.scrollToBottom();
+          
+//       })
+//       .catch(error => {
+        
+//         console.error('Error:', error);
+//       });
+
+//           }
+      this.socket.onmessage = (event)=>{
+          const messageData = JSON.parse(event.data);
+          console.log(messageData)
+          if(messageData.kind == 'message'){
+            const sender = messageData.message.username
+            const text = messageData.message.message
+            const timestamp = messageData.message.timestamp;
+            
+            if(sender==this.uid){
+                
+              this.messages.push({'sender':sender,'text':text,'timestamp':timestamp,'isSelf':true})
+                 
+            }
+            else{
+              this.messages.push({'sender':sender,'text':text,'timestamp':timestamp,'isSelf':false})
+              
+            }
+            this.scrollToBottom();
+          }
+          else if(messageData.kind == 'user'){
+            this.users = messageData.name
+            // this.$forceUpdate()
+          }
+          else if(messageData.kind == '@'){
+            const you = messageData.message.username
+            console.log(messageData.message.username)
+            alert(you+"@我")
+          }
+          
+          else{
+            this.roomList = messageData.message
+            const dr = messageData.room
+            if(dr == this.roomNum){
+              this.roomReady = false
+            }
+          }
+          
+          
+      }
+
+      this.socket.onclose = (event)=>{
+          console.log(this.username+"离开"+this.roomNum)
+      }
+
+    },
+    sendMessage(){
+      if(this.txt==''){
+        alert("消息不能为空！")
+      }
+      else{
+        const customMessage = JSON.stringify({  
+          kind: 'message',  
+          text: this.txt
+        });
+        this.socket.send(customMessage)
+        this.txt=''
+      }
+    
+  },
     startPlay () {
        
         const deskUrl = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"desk&type=push"
@@ -519,7 +642,11 @@ export default {
         this.player = null
     },
     PlayStudentCamera(){
-        const studentUrl1 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentCamera&type=push"
+        if(this.pusher1){
+            this.pusher1.close()
+            this.pusher1 = null
+        }
+        const studentUrl1 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentCamera&type=play"
         this.pusher1 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('studentVideo'), // video 标签
             debug: false, // 是否打印日志
@@ -572,7 +699,11 @@ export default {
         
     },
     PlayStudentMIC(){
-        const studentUrl2 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentMIC&type=push"
+        if(this.pusher2){
+            this.pusher2.close()
+            this.pusher2 = null
+        }
+        const studentUrl2 = "https://zlm.com/index/api/webrtc?app=live&stream="+this.cid+"studentMIC&type=play"
         this.pusher2 = new ZLMRTCClient.Endpoint({
             element: document.getElementById('studentAudio'), // video 标签
             debug: false, // 是否打印日志
@@ -605,8 +736,9 @@ export default {
     
     closeHand(student){
         this.agree = false
+        this.handShow = false
         this.students.splice(this.students.indexOf(student), 1)
-        
+        this.handsNum = this.handsNum-1
         this.have2 = false
         this.drawws.send('refuse,'+student)
         if(this.pusher1){
@@ -1156,6 +1288,192 @@ input[type="range"]{
     -webkit-transition: .2s;
     transition: opacity .2s;
   }
+  /* 聊天界面 */
+  .send{
+width: 100px;  
+height: 40px;  
+margin-left: auto;;
+position: relative;
+background-color: #70c8f4; 
+border: none;  
+border-radius: 5px; 
+float:right;
+margin: 10px;
+}
+.send:hover {  
+background-color: #26ade7; /* 鼠标悬停时稍暗的绿色 */  
+}  
+.me{
+margin-left: auto;
+position: relative;
+text-align: right;
+margin-bottom: 5px;
+}
+.newMessage {
+display: flex;
+flex-direction: column;
+width: 100%;
+margin-bottom: 20px; /* 为每条消息添加底部外边距 */
+}
 
+.message-info {
+display: flex;
+align-items: center;
+font-size: 0.9em; /* 减小字体大小 */
+color: #040404; /* 改变字体颜色 */
+margin-bottom: 5px;
+margin-top: 10px;
+}
+
+.sender {
+margin-right: 5px;
+}
+
+.timestamp {
+margin-left: 5px;
+color: #060606; 
+}
+
+
+
+.message-bubble-others {
+position: relative;
+padding: 10px 10px;
+border-radius: 20px;
+max-width: 70%;
+width: fit-content;
+background-color: #f9da84;
+line-height: 1.6;
+margin-top: 5px;
+white-space:normal; 
+word-break:break-all;
+overflow:hidden;
+}
+
+.message-bubble-me {
+position: relative;
+padding: 10px 15px;
+border-radius: 20px;
+max-width: 70%;
+width: fit-content;
+background-color: #9bf693; /* 自己的消息背景颜色 */
+align-self:flex-end;
+margin-left: auto;
+line-height: 1.6;
+margin-top: 5px;
+white-space:normal; 
+word-break:break-all;
+overflow:hidden;
+}
+
+/* 别人的消息气泡箭头 */
+.message-bubble-others::before {
+content: '';
+position: absolute;
+width: 0;
+height: 0;
+border-style: solid;
+top: 50%;
+left: -10px;
+border-color: transparent transparent transparent #94edb6;
+transform: translateY(-50%);
+}
+
+/* 自己的消息气泡箭头 */
+.message-bubble-me::before {
+content: '';
+position: absolute;
+width:0;
+height: 0;
+border-style: solid;
+top: 50%;
+right: -10px;
+border-color: transparent #e6f7ff transparent transparent;
+transform: translateY(-50%);
+}
+
+.chat-bottom{
+border: solid 1px;
+height: 200px;
+margin-top: 10px;
+
+}
+.chat-top{
+display: flex; /* 使用Flexbox布局 */
+justify-content: space-between; /* 两端对齐，元素之间的间隔相等 */
+align-items: center; 
+}
+
+
+
+.container-width {
+width: 80%;
+margin: 0 auto; 
+height: 70%;
+}
+
+.el-header, .el-footer {
+  background-color: #B3C0D1;
+  color: #333;
+  text-align: center;
+  line-height: 60px;
+}
+
+.el-aside {
+  background-color: #cae7f5;
+  color: #333;
+  text-align: center;
+  overflow:scroll;
+}
+
+.el-main {
+  background-color: #e7f1f5;
+  color: #131111;
+  text-align:left;
+  height: 700px;
+  overflow: hidden;
+  line-height: 10px;
+}
+.message{
+      height:400px;
+      border:1px solid;
+      overflow-y:auto;
+      line-height: 10px;
+      position: relative;
+      }
+
+.chat-main{
+  border: solid;
+  height:500px;
+  width: 50%;
+}
+
+button {
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.modal {
+position: fixed;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.modal-content {
+background-color: #fff;
+padding: 20px;
+border-radius: 5px;
+width: 300px;
+height: 200px;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+}
 
 </style>

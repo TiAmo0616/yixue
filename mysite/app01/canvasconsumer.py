@@ -112,6 +112,7 @@ class ChatConsumer1(WebsocketConsumer):
                               'msg': event['message']}))  # 给组内所有人回复
 
     def dianming(self,event):
+        print(userList)
         self.send(json.dumps({'kind': "dianming",'msg': event['message']['msg']}))  # 给组内所有人回复
 
     def askHand(self,event):
