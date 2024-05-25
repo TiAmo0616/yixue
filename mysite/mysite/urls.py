@@ -64,6 +64,10 @@ urlpatterns = [
     path('editCourse/',views.editCourse),
     path('changeImage/',views.changeImage),
     path('deleteCourse/',views.deleteCourse),
+    path('searchProblem/',views.searchProblem),
+    path('showAns/',views.showAns),
+    path('createAnswer/',views.createAnswer),
+    path('deleteAnswer/',views.deleteAnswer),
 
 
 ]

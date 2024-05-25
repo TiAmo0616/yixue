@@ -27,6 +27,8 @@ from app01.models import s_q
 from app01.models import problem
 from app01.models import records
 from app01.models import learningMaterials
+from app01.models import Answer
+
 def generate_course_code(index):
     course_code = str(uuid.uuid4().hex)[:index]  # 生成一个32位的UUID，并截取前8位作为课程码
     return course_code
@@ -988,4 +990,55 @@ def deleteCourse(request):
     cid = request.POST.get('cid')
     c = Course.objects.filter(cid=cid).first()
     c.delete()
+    return JsonResponse({'status': 'success'})
+
+def searchProblem(request):
+    cid = request.POST.get('cid')
+    pid = request.POST.get('pid')
+    p = problem.objects.filter(pid=pid).first()
+    answers = Answer.objects.filter(pid=pid)
+    res=[]
+    for answer in answers:
+        temp = {}
+        temp['info'] = answer.ans
+        temp['answerer'] = answer.name
+        temp['answerTime'] = answer.t
+        temp['aid'] = answer.aid
+        res.append(temp)
+
+
+    return JsonResponse({'status': 'success','info':p.info,'asker':p.name,'t':p.t,'resolved':p.status,'jh':p.jh,'res':res})
+
+def createAnswer(request):
+    pid = request.POST.get('pid')
+    aid = generate_course_code(12)
+    t = datetime.now().strftime("%Y-%m-%d %H:%M")
+    ans = request.POST.get('ans')
+    answerer = request.POST.get('answerer')
+    a = Answer()
+    a.ans = ans
+    a.aid = aid
+    a.pid = pid
+    a.t = t
+    a.name = answerer
+    a.save()
+    return JsonResponse({'status': 'success'})
+
+def showAns(request):
+    pid = request.POST.get('pid')
+    answers = Answer.objects.filter(pid=pid)
+    res = []
+    for answer in answers:
+        temp = {}
+        temp['info'] = answer.ans
+        temp['answerer'] = answer.name
+        temp['answerTime'] = answer.t
+        temp['aid'] = answer.aid
+        res.append(temp)
+    return JsonResponse({'status': 'success','res':res})
+
+def deleteAnswer(request):
+    aid = request.POST.get('aid')
+    a = Answer.objects.filter(aid=aid).first()
+    a.delete()
     return JsonResponse({'status': 'success'})

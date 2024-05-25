@@ -147,7 +147,7 @@
             <el-row v-for="problem in problems" :key="problem.pid">
                {{ problem.pinfo }}
                用户{{ problem.askername }}
-               <button @click="huifu(problem.pid)">回复</button>
+               <button @click="huifu(problem.pid)">查看详情</button>
             </el-row>
         </div>
         <!-- 去提问 -->
@@ -280,6 +280,9 @@ export default {
   },
   
   methods: {
+    huifu(pid){
+        this.$router.push({ name: 'problem' ,params:{'cid':this.cid,'pid':pid}})
+    },
     setClass(){
         this.$router.push({ name: 'lessonInfo' ,params:{'cid':this.cid}})
     },

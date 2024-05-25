@@ -72,6 +72,39 @@
             </el-row>
         </div>
      </div>
+     <!-- 问答 -->
+     <div v-show="thirdshow">
+        <div>
+            <button @click="showProblem('my')">我的</button>
+            <button @click="showProblem('jh')">精华</button>
+            <button @click="showProblem('all')">全部</button>
+            <button @click="gototiwen">发布</button>
+        </div>
+
+        
+        <div>
+            <el-row v-for="problem in problems" :key="problem.pid">
+               {{ problem.pinfo }}
+               用户{{ problem.askername }}
+               <button @click="huifu(problem.pid)">查看详情</button>
+            </el-row>
+        </div>
+        <!-- 去提问 -->
+        <div v-show="tiwenShow" class="modal">
+            <div class="modal-content">
+            <form @submit.prevent="submitProblems">  
+                <div class="form-group">  
+                <label for="new_wname">请输入问题：</label>  
+                <input type="textarea" v-model="new_pinfo" required>  
+                </div>  
+
+                <button type="submit">确认提问</button>  
+                <button @click="tiwenback">取消</button>
+            </form>  
+            </div>
+        </div>
+        <!-- 提问结束 -->
+    </div>
       <!-- 直播回放 -->
     <div v-show="fifthshow">
       <el-row v-for="date in mp4Files" :key="date.period">
@@ -128,7 +161,15 @@ export default {
       paths:[],
       rootpath:'',
 
-      data:[]
+      data:[],
+
+      fabushow:false,
+      new_wname:'',
+      newbegin:'',
+      newend:'',
+      problems:[],
+      tiwenShow:false,
+      new_pinfo:'',
 
     }
   },
@@ -160,6 +201,51 @@ export default {
       this.searchLM()
   },
   methods:{
+    huifu(pid){
+        this.$router.push({ name: 'problem' ,params:{'cid':this.cid,'pid':pid}})
+    },
+        showProblem(status){
+        axios.post("http://127.0.0.1:8000/showProblems/",{'cid':this.cid,'status':status,'username':this.username},{
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+            .then(response =>{
+                console.log(response.data)
+                if(response.data.status == 'success'){
+                this.problems = response.data.problems
+                }
+                
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    },
+    gototiwen(){
+        this.tiwenShow = true
+    },
+    tiwenback(){
+        this.tiwenShow = false
+    },
+    submitProblems(){
+        axios.post("http://127.0.0.1:8000/saveProblems/",{'cid':this.cid,'info':this.new_pinfo,'username':this.username},{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+        .then(response =>{
+            console.log(response.data)
+            if(response.data.status == 'success'){
+            this.problems = response.data.problems
+            this.tiwenShow = false
+            this.new_pinfo = ''
+            }
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    },
     searchLM(){
         axios.post("http://127.0.0.1:8000/searchLM/",{'cid':this.cid},{
         headers: {
@@ -254,6 +340,7 @@ export default {
             this.sencondshow = false
             this.thirdshow = true
             this.fifthshow = false
+            this.showProblem('all')
         }
         else {
           

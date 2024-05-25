@@ -96,8 +96,14 @@ class problem(models.Model):
     status = models.CharField(max_length=64,default='未解决')
     ans = models.TextField(default='')
     cid = models.CharField(max_length=32,default='')
-    jh = models.CharField(max_length=32,default='0')
+    jh = models.CharField(max_length=32,default='0')#是不是精华
 
+class Answer(models.Model):
+    aid = models.CharField(max_length=32, primary_key=True)
+    pid = models.CharField(max_length=32, default='')
+    ans = models.TextField(default='')
+    name = models.CharField(max_length=32)#回复者账号名
+    t = models.CharField(max_length=64)
 
 class records(models.Model):
     cid = models.CharField(max_length=32,default='')#stream的名称
