@@ -62,6 +62,8 @@ urlpatterns = [
     path('deleteLM/',views.deleteLM),
     path('editDirectory/',views.editDirectory),
     path('editCourse/',views.editCourse),
+    path('changeImage/',views.changeImage),
+    path('deleteCourse/',views.deleteCourse),
 
 
 ]

@@ -951,8 +951,41 @@ def editCourse(request):
     cname = request.POST.get('cname')
     xueshi = request.POST.get('xueshi')
     info = request.POST.get('intro')
+    teacher = request.POST.get('teacher')
     c = Course.objects.filter(cid=cid).first()
     c.cname = cname
     c.xueshi = xueshi
     c.introduction = info
+    c.teacher = teacher
     c.save()
+    return JsonResponse({'status': 'success'})
+
+
+def changeImage(request):
+    # 图片对象
+    file_obj = request.FILES.get('file')
+    # 图片名字
+    file_name = request.POST.get('fileName')
+    cid = request.POST.get('cid')  # 账号名
+
+    save_path = 'app01/static/' + file_name
+    image_url = "http://127.0.0.1:8000/static/" + file_name
+    # 使用文件系统存储对象进行保存
+    fs = FileSystemStorage()
+    fs.save(save_path, file_obj)
+
+    c = Course.objects.filter(cid=cid).first()
+    c.img = file_name
+    c.save()
+    # 返回图片保存路径给前端
+
+    return JsonResponse({
+        "file_name": file_name,
+        'url': image_url})
+
+
+def deleteCourse(request):
+    cid = request.POST.get('cid')
+    c = Course.objects.filter(cid=cid).first()
+    c.delete()
+    return JsonResponse({'status': 'success'})
