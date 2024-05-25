@@ -21,6 +21,7 @@ import zhibodemo from '@/components/zhibodemo'
 import teacherzhibo from '@/components/teacherzhibo'
 import studentzhibo from '@/components/studentzhibo'
 import dianbo from '@/components/dianbo'
+import lessonInfo from '@/components/lessonInfo'
 
 Vue.use(Router)
 Vue.use(Vuex);
@@ -167,6 +168,12 @@ export default new Router({
       path: '/dianbo',
       name: 'dianbo',
       component: dianbo,
+      props: true
+    },
+    {
+      path: '/lessonInfo',
+      name: 'lessonInfo',
+      component: lessonInfo,
       props: true
     },
 

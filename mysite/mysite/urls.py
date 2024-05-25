@@ -61,6 +61,7 @@ urlpatterns = [
     path('appendLM/',views.appendLM),
     path('deleteLM/',views.deleteLM),
     path('editDirectory/',views.editDirectory),
+    path('editCourse/',views.editCourse),
 
 
 ]

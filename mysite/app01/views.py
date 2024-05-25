@@ -945,3 +945,14 @@ def editDirectory(request):
     lm.label = label
     lm.save()
     return JsonResponse({'status': 'success'})
+
+def editCourse(request):
+    cid = request.POST.get('cid')
+    cname = request.POST.get('cname')
+    xueshi = request.POST.get('xueshi')
+    info = request.POST.get('intro')
+    c = Course.objects.filter(cid=cid).first()
+    c.cname = cname
+    c.xueshi = xueshi
+    c.introduction = info
+    c.save()

@@ -105,7 +105,10 @@ export default {
     },
     role() {
       return this.$store.state.username.role;
-    }
+    },
+    currentrole(){
+      return this.$store.state.username.currentrole;
+  }
   },
   data () {
     return {
@@ -178,7 +181,7 @@ export default {
         });
     },
     watchFile(path){
-        this.$router.push({ name: 'dianbo' ,params:{"path":path,'cid':this.cid,'role':this.role}})
+        this.$router.push({ name: 'dianbo' ,params:{"path":path,'cid':this.cid,'role':this.currentrole}})
     },
     getmp4List(){
         axios.post("http://127.0.0.1:8000/getRecordsList/",{'cid':this.cid},{

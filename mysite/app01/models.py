@@ -4,14 +4,32 @@ from django.db import models
 
 # Create your models here.
 # current_date = datetime.now().date()
+
+class CompositeField(models.Field):
+    def __init__(self, fields, *args, **kwargs):
+        self.fields = fields
+        super().__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        kwargs['fields'] = self.fields
+        return name, path, args, kwargs
+
+    def db_type(self, connection):
+        return 'varchar'
+
+    def get_attname(self):
+        return '_'.join([field.get_attname() for field in self.fields])
+
 class userInfo(models.Model):
-    name = models.CharField(max_length=32,primary_key=True)#账号名
-    password = models.CharField(max_length=64)
-    role = models.CharField(max_length=32)
+    name = models.CharField(max_length=32,null=False,primary_key=True)#账号名
+    password = models.CharField(max_length=64,null=False)
+    role = models.CharField(max_length=32,null=False)
     sex = models.CharField(max_length=32,default='')
     info = models.CharField(max_length=256,default='暂无介绍')
     username = models.CharField(max_length=32,default='')
     img = models.CharField(max_length=64,default='default.jpg')
+    #primary_key = CompositeField([name, role])
 
 class sc(models.Model):
     stuName = models.CharField(max_length=32)

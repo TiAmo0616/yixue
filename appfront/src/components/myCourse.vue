@@ -23,12 +23,15 @@
     </div>
     <!-- 选课 -->
     <div>
-      <div v-if="already==0">
-        <button @click="pick">选课</button>
+      <div v-if="this.currentrole == '学生'">
+        <div v-if="already==0">
+          <button @click="pick">选课</button>
+        </div>
+        <div v-else>
+          已选课
+        </div>
       </div>
-      <div v-else>
-        已选课
-      </div>
+      
       
     </div>
     <!-- 教师 -->
@@ -66,7 +69,10 @@ export default {
     },
     role() {
       return this.$store.state.username.role;
-    }
+    },
+    currentrole(){
+      return this.$store.state.username.currentrole;
+  }
   },
   created(){
     axios.post("http://127.0.0.1:8000/showCourse/",{'cid':this.cid,'username':this.username},{

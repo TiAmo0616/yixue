@@ -58,8 +58,8 @@ export default {
                           // 一、使用本地存储localStorage实现登录存储的功能、
                 
                 const role = response.data.role
-                this.$store.commit('login',{username:this.username,role:role});
-                localStorage.setItem('userInfo', {username:this.username,role:role});
+                this.$store.commit('login',{username:this.username,role:role,currentrole:role});
+                localStorage.setItem('userInfo', {username:this.username,role:role,currentrole:role});
                 this.$router.push({ name: 'mainpage' ,params:{"username":this.username,'role':role}});
             }
             else if(response.data.status == 'unmatch'){alert("用户名密码错误！")}

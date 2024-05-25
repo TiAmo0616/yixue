@@ -14,7 +14,7 @@
         学生人数：{{ course.stuNum }}
         学时:{{ course.xueshi }}
         {{ course.status }}
-        <button>课程设置</button>
+        <button @click="setClass">课程设置</button>
         <button @click="classBegin">开始直播</button>
     </div>
     <!-- 服务 -->
@@ -216,7 +216,10 @@ export default {
     },
     role() {
       return this.$store.state.username.role;
-    }
+    },
+    currentrole(){
+      return this.$store.state.username.currentrole;
+  }
   },
   data () {
     //const data=[{id:0,label:'学习资源',children:[],path:''}]
@@ -277,6 +280,9 @@ export default {
   },
   
   methods: {
+    setClass(){
+        this.$router.push({ name: 'lessonInfo' ,params:{'cid':this.cid}})
+    },
     searchLM(){
         axios.post("http://127.0.0.1:8000/searchLM/",{'cid':this.cid},{
         headers: {

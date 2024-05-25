@@ -78,6 +78,9 @@ export default {
     },
     role() {
       return this.$store.state.username.role;
+    },
+    currentrole(){
+      return this.$store.state.username.currentrole;
     }
   },
   methods:{

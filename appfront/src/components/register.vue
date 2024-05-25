@@ -1,5 +1,5 @@
 <template>
-<!-- <div>
+<div>
     <div id="backgroundpic" ></div>
 
     <div id="contents">
@@ -7,7 +7,7 @@
 
       <div class="hello">
         <div id="topTitle">
-          <p>登录</p>
+          <p @click="login">登录</p>
           <p id="registertext">注册</p>
         </div>
           
@@ -42,7 +42,7 @@
         </form>  
       </div>
     </div>
-</div> -->
+</div>
 </template>
 
 <script>
@@ -58,6 +58,9 @@ export default {
     }
   },
   methods:{
+    login(){
+      this.$router.push({ name: 'login' });
+    },
     register(){
         if(this.password==this.confirm_password){
             axios.post("http://127.0.0.1:8000/register/",{'username':this.username,'password':this.password,'role':this.role},{
@@ -105,10 +108,10 @@ position: absolute;
 #contents{
   background:rgba(255,255,255,0.6);
   position:relative;
-  width: 70%;
-  height: 450px;
+  width: 50%;
+  height: 500px;
   top: 0;left: 0;right: 0;bottom: 0;margin: auto;
-  
+  margin-top: 150px;
 }
 
 .hello p{

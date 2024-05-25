@@ -11,7 +11,7 @@
           <div class="userinfo">
             <div class="title">
               <p>基本信息</p>
-              <!-- <el-button type="text" @click="dialogFormVisible = true"><img src="../assets/userinfo/pencil.svg" width="20px" /></el-button> -->
+              <el-button type="text" @click="dialogFormVisible = true"><img src="../assets/userinfo/pencil.svg" width="20px" /></el-button>
             </div>
 
             <el-row>

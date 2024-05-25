@@ -7,18 +7,21 @@ const store = new Vuex.Store({
   state: {
     isLoggedIn: false,
     username:'',
-    role:''
+    role:'',
+    currentrole:''
   },
   mutations: {
-    login(state,username,role) {
+    login(state,username,role,currentrole) {
       state.isLoggedIn = true;
       state.username = username;
       state.role = role
+      state.currentrole = currentrole
     },
     logout(state) {
       state.isLoggedIn = false;
       state.username = '';
       state.role = ''
+      this.currentrole = ''
     }
   }
 });
