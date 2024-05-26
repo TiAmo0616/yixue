@@ -726,6 +726,7 @@ def searchProblems(cid,status,username):
         temp['status'] = p.status
         temp['ans'] = p.ans
         temp['pinfo'] = p.info
+        temp['jh'] = p.jh
         res.append(temp)
         if p.name == username:
             mys.append(temp)
@@ -1041,4 +1042,17 @@ def deleteAnswer(request):
     aid = request.POST.get('aid')
     a = Answer.objects.filter(aid=aid).first()
     a.delete()
+    return JsonResponse({'status': 'success'})
+
+def deleteProblem(request):
+    pid = request.POST.get('pid')
+    p = problem.objects.filter(pid=pid).first()
+    p.delete()
+    return JsonResponse({'status': 'success'})
+
+def setjh(request):
+    pid = request.POST.get('pid')
+    p = problem.objects.filter(pid=pid).first()
+    p.jh = 1
+    p.save()
     return JsonResponse({'status': 'success'})

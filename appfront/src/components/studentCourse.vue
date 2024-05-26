@@ -86,6 +86,7 @@
             <el-row v-for="problem in problems" :key="problem.pid">
                {{ problem.pinfo }}
                用户{{ problem.askername }}
+               <div v-if="problem.jh == 1">精华</div>
                <button @click="huifu(problem.pid)">查看详情</button>
             </el-row>
         </div>

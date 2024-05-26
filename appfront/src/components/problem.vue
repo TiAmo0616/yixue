@@ -10,6 +10,7 @@
         提问者{{ asker }}
         提问时间{{ askTime }}
         <div v-if="jh == 1">精华</div>
+        <button v-if="asker == username" @click="deleteProblem">删除提问</button>
     </div>
     <!-- 所有回复 -->
     <div>
@@ -90,6 +91,24 @@ export default {
       });
   },
   methods:{
+    deleteProblem(){
+        axios.post("http://127.0.0.1:8000/deleteProblem/",{'pid':this.pid,},{
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
+      .then(response =>{
+        console.log(response.data)
+        if(response.data.status == 'success'){
+          alert("删除成功！")
+          this.back()
+        }
+         
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    },
     back(){
         if(this.currentrole == '学生'){
             this.$router.push({ name: 'studentCourse' ,params:{'cid':this.cid}})

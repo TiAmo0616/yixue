@@ -27,6 +27,7 @@
               
             </el-row>
         </div>
+        <button @click="back">返回</button>
     </div>
 
 </template>
@@ -78,6 +79,9 @@ export default {
       });
   },
   methods:{
+    back(){
+      this.$router.push({ name: 'singleCourse' ,params:{'cid':this.cid}})
+    },
     see(name,status){
       this.$router.push({ name: 'judgeWork' ,params:{"wid":this.wid,'cid':this.cid,'name':name,'status':status}})
     }

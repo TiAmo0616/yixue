@@ -68,6 +68,8 @@ urlpatterns = [
     path('showAns/',views.showAns),
     path('createAnswer/',views.createAnswer),
     path('deleteAnswer/',views.deleteAnswer),
+    path('deleteProblem/',views.deleteProblem),
+    path('setjh/',views.setjh),
 
 
 ]

@@ -4,6 +4,7 @@
         <div>
             <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
         </div>
+        <button @click="back">返回</button>
         <!-- 提交本次作业设置 -->
         <button @click="back">提交本次作业设置</button>
         <!-- 一题一题设置 -->

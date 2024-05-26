@@ -147,7 +147,9 @@
             <el-row v-for="problem in problems" :key="problem.pid">
                {{ problem.pinfo }}
                用户{{ problem.askername }}
+               <div v-if="problem.jh == 1">精华</div>
                <button @click="huifu(problem.pid)">查看详情</button>
+               <button v-if="problem.jh==0" @click="setjh(problem.pid)">设为精华</button>
             </el-row>
         </div>
         <!-- 去提问 -->
@@ -280,6 +282,26 @@ export default {
   },
   
   methods: {
+    setjh(pid){
+        axios.post("http://127.0.0.1:8000/setjh/",{'pid':pid},{
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+        .then(response =>{
+            console.log(response.data)
+            if(response.data.status == 'success'){
+                console.log(response.data)
+                alert("设置成功")
+                this.showProblem('all')
+            }
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+        });
+    },
     huifu(pid){
         this.$router.push({ name: 'problem' ,params:{'cid':this.cid,'pid':pid}})
     },
