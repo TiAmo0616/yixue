@@ -6,14 +6,14 @@
         <el-row :gutter="20">
           <el-col :span="4">
             <div class="grid-content bg-purple">
-              <img src="../assets/image/logo2.0-removebg-preview.png" alt="logo" height="60px" />
+              <img src="../assets/image/logo2.0-removebg-preview.png" alt="logo" height="60px" @click="backToMain"/>
             </div>
           </el-col>
         
           <el-col :span="14">
             <div class="grid-content bg-purple">
               <el-input placeholder="请输入内容" v-model="input3" class="input-with-select">
-                  <el-button slot="append" icon="el-icon-search"></el-button>
+                  <el-button slot="append" icon="el-icon-search" @click="sousuo"></el-button>
                 </el-input>
             </div>
           </el-col>
@@ -40,14 +40,14 @@
         <el-row :gutter="20">
           <el-col :span="4">
             <div class="grid-content bg-purple">
-              <img src="../assets/image/logo2.0-removebg-preview.png" alt="logo" height="60px" />
+              <img src="../assets/image/logo2.0-removebg-preview.png" alt="logo" height="60px" @click="backToMain"/>
             </div>
           </el-col>
 
           <el-col :span="14">
             <div class="grid-content bg-purple">
               <el-input placeholder="请输入内容" v-model="input3" class="input-with-select">
-                  <el-button slot="append" icon="el-icon-search"></el-button>
+                  <el-button slot="append" icon="el-icon-search" @click="sousuo"></el-button>
                 </el-input>
             </div>
           </el-col>
@@ -70,7 +70,7 @@
 
 <script>
 import logo from "../assets/logo.png"
-
+import axios from 'axios'
 export default {
 name: 'daohanglan',
 
@@ -79,6 +79,8 @@ data () {
     logo,
     activeIndex: '',
     opr:'',
+    input3:'',
+    matches:[],
   }
 },
 computed: {
@@ -97,7 +99,9 @@ computed: {
   }
 },
 methods:{
-  
+  sousuo(){
+    this.$router.push({ name: 'searchPage' ,params:{'info':this.input3}});
+  },
   changeRole(){
     if(this.currentrole == '学生'){
     this.opr = '老师'

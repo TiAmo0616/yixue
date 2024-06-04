@@ -23,6 +23,7 @@ import studentzhibo from '@/components/studentzhibo'
 import dianbo from '@/components/dianbo'
 import lessonInfo from '@/components/lessonInfo'
 import problem from '@/components/problem'
+import searchPage from '@/components/searchPage'
 
 Vue.use(Router)
 Vue.use(Vuex);
@@ -183,6 +184,13 @@ export default new Router({
       component: problem,
       props: true
     },
+    {
+      path: '/searchPage',
+      name: 'searchPage',
+      component: searchPage,
+      props: true
+    },
+
 
 
   ]

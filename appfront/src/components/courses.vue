@@ -4,23 +4,30 @@
     <div>
         <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
     </div>
-    <!-- 加个搜索框 -->
-    <div>
 
-    </div>
     <!-- 显示所有课程 -->
-    <div>
-        <el-row :gutter="20">
-            <el-col v-for="course in courses" :key="course.cid" :span="6">
-            <div class="course-card">
-                <img :src="course.img" alt="" width="200" height="150"/>
-                <div class="course-info">
-                <h3 @click="see(course.cid)">{{ course.cname }}</h3>
-                <h4>{{ course.teacher }}|{{ course.status }}</h4>
-                </div>
-            </div>
+    <div class="pagebody">
+      <div>
+        <el-row>
+            <el-col :span="6" v-for="course in courses" :key="course.cid" :offset="index > 0 ? 2 : 0">
+              <el-card shadow="hover" class="card ">
+                <div class="course-card" @click="see(course.cid)">
+                  <img :src="course.img" alt="" width="200" height="150"/>
+                  <div class="course-info">
+                    <h3>{{ course.cname }}</h3>
+                    <h4>{{ course.teacher }}|{{ course.status }}</h4>
+                  </div>
+                </div>              
+              </el-card>
             </el-col>
-        </el-row>
+          </el-row>
+
+          
+      </div>
+
+      <div class="lastline">
+        <p>Copyright © 2024 GoodGoodStudy. All rights reserved. </p>
+      </div>
     </div>
 </div>
 
@@ -79,5 +86,19 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.pagebody{
+  background-color: #f5f5f5;
+  /* position: fixed; */
+  overflow-y: scroll;
+  max-width: 100vw;
+  margin: 0 auto;
+  overflow:hidden;
+ 
+}
 
+.lastline p{
+  position: relative;
+  bottom: 0;
+  font-size: 10px;  
+}
 </style>

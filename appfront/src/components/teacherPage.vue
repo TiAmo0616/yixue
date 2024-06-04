@@ -9,7 +9,7 @@
       <div class='box'>
         <div class='headinfo'>
           <h1>我的课堂</h1>
-          <button @click="newVisible = true" class="btn" >新建课程</button>
+          <button @click="createCourse" class="btn" >新建课程</button>
         </div>
 
         <div class="tab-pane">
@@ -143,6 +143,10 @@ export default {
     }
   },
   methods:{
+    createCourse(){
+      this.newVisible = true
+      this.fileParam = new FormData(); //创建form对象
+    },
     handleClick(tab, event) {
         console.log(tab, event);
         if (tab.name === 'all') {
@@ -166,10 +170,10 @@ export default {
             this.dialogVisible = true;
     },
     handleChange(file,fileList){
-      this.fileParam = new FormData(); //创建form对象
+      
       this.fileParam.append("file", file["raw"]);
       this.fileParam.append("fileName", file["name"]);
-      this.fileParam.append('username',this.username)
+      
 
     },
     gotoCreate(){
@@ -179,6 +183,7 @@ export default {
         this.createShow = false
     },
     submitInfo(){
+      this.fileParam.append('username',this.username)
       this.fileParam.append('cname',this.cname)
       this.fileParam.append('teacher',this.teacher)
       this.fileParam.append('introduction',this.introduction)

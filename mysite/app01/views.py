@@ -7,6 +7,8 @@ from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.shortcuts import render
 
+from difflib import get_close_matches
+
 # Create your views here.
 from app01.models import userInfo
 
@@ -192,19 +194,23 @@ def createCourses(request):
     file_obj = request.FILES.get('file')
     # 图片名字
     file_name = request.POST.get('fileName')
-    save_path = 'app01/static/' + file_name
-    image_url = "http://127.0.0.1:8000/static/" + file_name
-    # 使用文件系统存储对象进行保存
-    fs = FileSystemStorage()
-    fs.save(save_path, file_obj)
+    if file_name:
+        save_path = 'app01/static/' + file_name
+        image_url = "http://127.0.0.1:8000/static/" + file_name
+        # 使用文件系统存储对象进行保存
+        fs = FileSystemStorage()
+        fs.save(save_path, file_obj)
+        course.img = file_name
 
     # course.createdate = current_date
+    if introduction:
+        course.introduction = introduction
+    if xueshi:
+        course.xueshi = xueshi
     course.username = username
     course.cname = cname
-    course.img = file_name
+
     course.cid = generate_course_code(8)
-    course.xueshi = xueshi
-    course.introduction = introduction
     course.teacher = teacher
     course.save()
 
@@ -249,6 +255,8 @@ def searchCourse(cid):
     temp['stuNum'] = len(students)
     temp['xueshi'] = course.xueshi
     temp['status'] = course.status
+    temp['teacher'] = course.teacher
+    temp['introduction'] = course.introduction
     return temp
 
 
@@ -1056,3 +1064,28 @@ def setjh(request):
     p.jh = 1
     p.save()
     return JsonResponse({'status': 'success'})
+
+
+def fuzzy_search(word_list, word_to_search):
+    matches = get_close_matches(word_to_search, word_list, n=5)
+    return matches
+def sousuo(request):
+    info = request.POST.get('info')
+    courses = Course.objects.filter()
+    word_list = []
+    for i in courses:
+        word_list.append(i.cname)
+    matches = fuzzy_search(word_list, info)
+    res=[]
+    for i in matches:
+        c = Course.objects.filter(cname=i)
+        for j in c:
+            temp={}
+            temp['cid'] = j.cid
+            temp['cname'] = j.cname
+            temp['teacher'] = j.teacher
+            temp['xueshi'] = j.xueshi
+            temp['img'] = "http://127.0.0.1:8000/static/" +j.img
+            temp['status'] = j.status
+            res.append(temp)
+    return JsonResponse({'status': 'success','matches':res})
