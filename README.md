@@ -1,6 +1,6 @@
 # yixue
 
-##2024.6.16 完成（V1.0）
+## 2024.6.16 完成（V1.0）
 
 * 有空再看
 * 刷新后登录状态能否保存https://blog.csdn.net/qq_63141957/article/details/131642539#:~:text=vue2%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87,%E4%BC%9A%E8%AF%9D%E6%9C%9F%E9%97%B4%E4%BF%9D%E6%8C%81%E6%95%B0%E6%8D%AE
