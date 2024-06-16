@@ -1,9 +1,22 @@
 <template>
     <div>
+      <!-- 返回 -->
+    <div class="backbox">
+      <button @click="back" class="backbtn">
+        <img
+          src="../assets/image/lessoninfo/left.svg"
+          alt="logo"
+          class="back-icon"
+        />
+      </button>
+      <p class="back-text">| 返回</p>
+    </div>
+
+      
         <video id="videoPlayer" width="1200" height="600" controls type="video/mp4">
         Your browser does not support the video tag.
         </video>
-        <button @click="back">返回</button>
+        
     </div>
 
 </template>
@@ -37,5 +50,27 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.backbox {
+  width: 100%;
+  display: flex;
+}
+.backbtn {
+  display: inline-block;
+  vertical-align: middle;
+  border: 0;
+  background-color: transparent;
+}
 
+.back-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+  height: auto;
+}
+
+.back-text {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 20px;
+}
 </style>

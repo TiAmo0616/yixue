@@ -4,13 +4,27 @@
         <div>
             <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
         </div>
-        <!-- 学生信息 -->
-        <div>
-            {{ name }}的答卷：
+        <!-- 返回 -->
+        <div class="backbox">
+            <button @click="back" class="backbtn">
+                <img
+                src="../assets/image/lessoninfo/left.svg"
+                alt="logo"
+                class="back-icon"
+                />
+            </button>
+            <p class="back-text">| 返回</p>
         </div>
+
+        <div class='pagebody'>
+            <div class='box'>
+                <!-- 学生信息 -->
+                <div>
+                    <h4>{{ name }}的答卷</h4>
+                </div>
         <!-- 显示作答情况 -->
         <div v-if="status == '待批改'">
-            <el-row v-for="question in questions" :key="question.qid">
+            <el-row v-for="question in questions" :key="question.qid" class="each">
                 <div v-if="question.kind == '单选题'">
                     ({{ question.score }}分)
                     {{ question.qname }}
@@ -53,12 +67,12 @@
                     {{ question.kind }}
                     <br>
                     {{ question.info }}
-
+<br>
                     <el-input placeholder="请输入内容"
                 
                     v-model="answers[question.qid]"  
                     clearable
-                    :disabled="true">
+                    :disabled="true" class="input">
                     </el-input>
 
                     <div>
@@ -66,15 +80,17 @@
                         <el-input 
                             v-model="scores[question.qid]"  
                             @input="updatescore(question.qid, $event.target.value)" 
-                            clearable>
+                            clearable class="score">
                             </el-input>
+                            <br>
                         点评：
+                        <br>
                         <el-input 
                         type="textarea"
                         :rows="5"
                         v-model="judgements[question.qid]"  
                         @input="updatejudgement(question.qid, $event.target.value)" 
-                        clearable>
+                        clearable class="input">
                         </el-input>
 
                     </div>
@@ -85,29 +101,32 @@
                     {{ question.kind }}
                     <br>
                     {{ question.info }}
-
+<br>
                 <el-input
                 type="textarea"
                 :rows="5"
                 placeholder="请输入内容"
                 v-model="answers[question.qid]"  
                 
-                :disabled="true"></el-input>
+                :disabled="true" class="input"></el-input>
                 
                 <div>
                     得分:
+                    
                     <el-input 
                         v-model="scores[question.qid]"  
                         @input="updatescore(question.qid, $event.target.value)" 
-                        clearable>
+                        clearable class="score">
                         </el-input>
+                        <br>
                     点评：
+                    <br>
                     <el-input 
                     type="textarea"
                     :rows="5"
                     v-model="judgements[question.qid]"  
                     @input="updatejudgement(question.qid, $event.target.value)" 
-                    clearable>
+                    clearable class="input">
                     </el-input>
                 </div>
                </div>
@@ -163,11 +182,11 @@
                     {{ question.kind }}
                     <br>
                     {{ question.info }}
-
+<br>
                     <el-input
                     v-model="answers[question.qid]"  
                     clearable
-                    :disabled="true">
+                    :disabled="true" class="input">
                     </el-input>
 
                     <div>
@@ -175,15 +194,17 @@
                         <el-input 
                             v-model="scores[question.qid]" 
                             :disabled="true" 
-                            clearable>
+                            clearable class="score">
                             </el-input>
+                            <br>
                         点评：
+                        <br>
                         <el-input 
                         :disabled="true"
                         type="textarea"
                         :rows="5"
                         v-model="judgements[question.qid]"  
-                        clearable>
+                        clearable class="input">
                         </el-input>
 
                     </div>
@@ -194,38 +215,42 @@
                     {{ question.kind }}
                     <br>
                     {{ question.info }}
-
+<br>
                 <el-input
                 type="textarea"
                 :rows="5"
                 placeholder="请输入内容"
                 v-model="answers[question.qid]"  
                 
-                :disabled="true"></el-input>
+                :disabled="true" class="input"></el-input>
                 
                 <div>
                     得分:
                     <el-input 
                         v-model="scores[question.qid]"  
                         :disabled="true"
-                        clearable>
+                        clearable class="score">
                         </el-input>
+                        <br>
                     点评：
+                    <br>
                     <el-input 
                     type="textarea"
                     :rows="5"
                     v-model="judgements[question.qid]"  
                     :disabled="true"
-                    clearable>
+                    clearable class="input">
                     </el-input>
                 </div>
                </div>
                
            </el-row>
-           <button @click="back">返回</button>
+           
         </div>
         
     </div>
+    </div>
+</div>
 
 
 </template>
@@ -297,7 +322,10 @@ export default {
   })
       .then(response =>{
         console.log(response.data)
-        alert('您已完成批改！')
+        this.$message({
+          message: '您已完成批改',
+          type: 'success'
+        });
         this.$router.push({ name: 'totalAnswer' ,params:{'cid':this.cid,'wid':this.wid}})
       })
       .catch(error => {
@@ -313,5 +341,74 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.backbox {
+  width: 100%;
+  display: flex;
+}
+.backbtn {
+  display: inline-block;
+  vertical-align: middle;
+  border: 0;
+  background-color: transparent;
+}
 
+.back-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+  height: auto;
+}
+
+.back-text {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 20px;
+}
+
+.pagebody{
+  width: 100%;
+  background-color: #f5f5f5;
+  /* position: fixed; */
+  overflow-y: scroll;
+  max-width: 100vw;
+  margin: 0 auto;
+  overflow:hidden;
+  height: calc(100%);
+}
+
+.box{
+  background-color: white;
+  border: 1px solid #797979;
+  margin:50px;
+  margin-top: 30px;
+}
+
+.each{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.box button{
+    background-color: #f59a23b0;
+  color: white;
+  border: #f59a23;
+  font-size: 15px;
+  border-radius: 10px;
+  margin-top: 10px;
+  height: 30px;
+  width: 80px;
+  margin-bottom: 20px;
+}
+
+.input{
+    width:60vw;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.score{
+    width:30vw;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
 </style>

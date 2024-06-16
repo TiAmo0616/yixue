@@ -30,6 +30,9 @@ from app01.models import problem
 from app01.models import records
 from app01.models import learningMaterials
 from app01.models import Answer
+from app01.models import comment
+from app01.models import CommentZan
+
 
 def generate_course_code(index):
     course_code = str(uuid.uuid4().hex)[:index]  # 生成一个32位的UUID，并截取前8位作为课程码
@@ -155,7 +158,7 @@ def listCourses(request):
     res = []
     courses = Course.objects.all()
     for course in courses:
-        if len(res)<8 and course.status=='进行中':
+        if len(res)<9 and course.status=='进行中':
             temp = {}
             temp['cid'] = course.cid
             temp['cname']= course.cname
@@ -163,7 +166,7 @@ def listCourses(request):
             temp['teacher'] = course.teacher
             temp['status'] = course.status
             res.append(temp)
-        if len(res)>=8:
+        if len(res)>=9:
             break
     return JsonResponse({'status':'success','courses':res})
 
@@ -373,6 +376,7 @@ def searchWork(cid,status):
         return  ings
     elif status == 'ed':
         return eds
+    res.sort(key=lambda  x:x['begin'])
     return res
 
 def showWorks(request):
@@ -510,11 +514,12 @@ def pickCourse(request):
 
 def studentCourses(request):
     username = request.POST.get('username')
+
     courses = sc.objects.filter(stuName=username)
     res=[]
     zhiboCourse=[]
     for i in courses:
-        course = Course.objects.filter(cid = i.cid).first()
+        course = Course.objects.filter(cid=i.cid).first()
         temp = {}
         temp['cid'] = course.cid
         temp['cname'] = course.cname
@@ -745,6 +750,7 @@ def searchProblems(cid,status,username):
         return  mys
     elif status == 'jh':
         return jhs
+    res.sort(key=lambda  x:x['t'])
     return res
 
 def showProblems(request):
@@ -830,7 +836,7 @@ def getRecordsList(request):#[{'period':2024-05-20','records':[{},{}]},{}]
             res.append({'period':period,'records':[{'period':period,'rname':record.rname,'path':record.path}]})
 
 
-
+    print(res)
     return JsonResponse({'status': 'success','res':res})
 
 def reName(request):
@@ -841,6 +847,14 @@ def reName(request):
     rec.rname = newrname
     rec.save()
     return JsonResponse({'status': 'success'})
+
+def deletelubo(request):
+    cid = request.POST.get('cid')
+    rname = request.POST.get('rname')
+    rec = records.objects.filter(cid=cid, rname=rname).first()
+    rec.delete()
+    return JsonResponse({'status': 'success'})
+
 
 def uploadVideo(request):
     video_file = request.FILES['video']
@@ -893,10 +907,9 @@ def searchLM(request):
         temp['label'] = lm.label
         temp['children'] = []
         temp['path'] = lm.path
-        pdid  = lm.parentdid
-        temp['pdid'] = pdid
+        temp['pdid'] = lm.parentdid
         res0.append(temp)
-    res0.sort(key=lambda x:x['did'])
+    res0.sort(key=lambda x:int(x['did']))
     res1=[{'did':'0','label':'学习资源','children':[],'path':''}]
     for i in res0:
         pdid = i['pdid']
@@ -999,6 +1012,9 @@ def deleteCourse(request):
     cid = request.POST.get('cid')
     c = Course.objects.filter(cid=cid).first()
     c.delete()
+    scs = sc.objects.filter(cid=cid)
+    for i in scs:
+        i.delete()
     return JsonResponse({'status': 'success'})
 
 def searchProblem(request):
@@ -1074,7 +1090,8 @@ def sousuo(request):
     courses = Course.objects.filter()
     word_list = []
     for i in courses:
-        word_list.append(i.cname)
+        if i.cname not in word_list:
+            word_list.append(i.cname)
     matches = fuzzy_search(word_list, info)
     res=[]
     for i in matches:
@@ -1089,3 +1106,69 @@ def sousuo(request):
             temp['status'] = j.status
             res.append(temp)
     return JsonResponse({'status': 'success','matches':res})
+
+def createComment(request):
+    cid = request.POST.get('cid')
+    info = request.POST.get('info')
+    username = request.POST.get('username')
+    t = datetime.now().strftime("%Y-%m-%d %H:%M")
+    commid = generate_course_code(8)
+    comm = comment()
+    comm.cid = cid
+    comm.info = info
+    comm.username = username
+    comm.t = t
+    comm.comid = commid
+    comm.save()
+    return JsonResponse({'status': 'success'})
+
+def showComments(request):
+    cid = request.POST.get('cid')
+    username = request.POST.get('username')
+    comments = comment.objects.filter(cid = cid)
+    res=[]
+    for i in comments:
+        temp = {}
+        jilu = CommentZan.objects.filter(comid=i.comid, username=username).first()
+        if jilu:
+            temp['showZan'] = 'on'
+        else:
+            temp['showZan'] = 'off'
+
+
+        temp['info'] = i.info
+        temp['username'] = i.username
+        temp['t'] = i.t
+        temp['zan'] = i.zan
+        temp['comid'] = i.comid
+        res.append(temp)
+    res.sort(key=lambda x:x['t'])
+    return JsonResponse({'status': 'success', 'res': res})
+
+def deleteComment(request):
+    cid = request.POST.get('cid')
+    comid = request.POST.get('comid')
+    c = comment.objects.filter(cid=cid,comid=comid).first()
+    c.delete()
+    return JsonResponse({'status': 'success'})
+
+def dianzan(request):
+    comid = request.POST.get('comid')
+    username = request.POST.get('username')
+    jilu = CommentZan.objects.filter(comid=comid,username=username).first()
+    c = comment.objects.filter(comid=comid).first()
+    if jilu:
+        jilu.delete()
+        c.zan-=1
+        c.save()
+        return JsonResponse({'status': 'success'})#已经给这条评论点过赞了，取消点赞
+    else:
+
+        c.zan+=1
+        c.save()
+        c2u = CommentZan()
+        c2u.comid = comid
+        c2u.username = username
+        c2u.save()
+        return JsonResponse({'status': 'success'})
+

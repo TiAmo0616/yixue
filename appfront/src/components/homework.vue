@@ -5,13 +5,22 @@
             <Daohanglan :isLoggedIn="isLoggedIn" :username="username"></Daohanglan>
         </div>
         <!-- 返回 -->
-        <div>
-            <el-page-header @back="goBack">
-            </el-page-header>
+        <div class="backbox">
+          <button @click="goBack" class="backbtn">
+            <img
+              src="../assets/image/lessoninfo/left.svg"
+              alt="logo"
+              class="back-icon"
+            />
+          </button>
+          <p class="back-text">| 返回</p>
         </div>
+        
+        <div class="pagebody">
+          <div class="box">
         <!-- 显示所有题目 -->
         <div>
-            <el-row v-for="question in questions" :key="question.qid">
+            <el-row v-for="question in questions" :key="question.qid" class="qbox">
                 <div v-if="question.kind == '单选题'">
                     ({{ question.score }}分)
                     {{ question.qname }}
@@ -52,7 +61,7 @@
                     <el-input placeholder="请输入内容"
                     v-model="answers[question.qid]"  
         @input="updateInputAnswer(question.kind,question.qid, $event.target.value)"
-                    clearable>
+                    clearable class="writebox">
                     </el-input>
 
                 </div>
@@ -68,26 +77,29 @@
                 :rows="5"
                 placeholder="请输入内容"
                 v-model="answers[question.qid]"  
-        @input="updateInputAnswer(question.kind,question.qid, $event.target.value)"  ></el-input>
+        @input="updateInputAnswer(question.kind,question.qid, $event.target.value)"  class="writebox"></el-input>
                 
                </div>
 
            </el-row>
         </div>
     <!-- 提交 -->
-    <button @click="submitAnswers">提交</button>
-    </div>
-
+    <button @click="submitAnswers" class="submit">提交</button>
+        </div>
+  </div>
+  </div>
 </template>
 
 <script>
 import axios from 'axios'
 import Daohanglan from './daohanglan.vue';
+import Mainpage from './mainpage.vue';
 export default {
   name: 'homework',
   props: ['wid','cid'],
   components:{
     Daohanglan,
+    Mainpage,
   },
   computed: {
     isLoggedIn() {
@@ -169,7 +181,10 @@ export default {
   })
       .then(response =>{
         console.log(response.data)
-        alert('您已成功提交！')
+        this.$message({
+          message: '您已成功提交！',
+          type: 'success'
+        });
         this.$router.push({ name: 'studentCourse' ,params:{'cid':this.cid}})
       })
       .catch(error => {
@@ -185,5 +200,72 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.backbox {
+  width: 100%;
+  display: flex;
+}
+.backbtn {
+  display: inline-block;
+  vertical-align: middle;
+  border: 0;
+  background-color: transparent;
+}
 
+.back-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+  height: auto;
+}
+
+.back-text {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 20px;
+}
+
+.pagebody {
+  width: 100%;
+  background-color: #f5f5f5;
+  /* position: fixed; */
+  overflow-y: scroll;
+  max-width: 100vw;
+  margin: 0 auto;
+  overflow: hidden;
+  height: calc(100%);
+}
+
+.box {
+  background-color: white;
+  border: 1px solid #797979;
+  margin: 50px;
+  margin-top: 30px;
+}
+
+.qbox{
+  margin-top: 20px;
+}
+
+.submit{
+  background-color: #f59a23b0;
+  color: white;
+  border: #f59a23;
+  font-size: 15px;
+  border-radius: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  margin-right: 20px;
+  height: 40px;
+  width: 80px;
+}
+
+.writebox{
+  width: 70vw;
+  margin: 0 auto;
+  margin-top: 30px;
+  display: flex; 
+  align-items: flex-start; 
+  position: relative;
+}
 </style>

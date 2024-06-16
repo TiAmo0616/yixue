@@ -117,3 +117,15 @@ class learningMaterials(models.Model):
     label = models.CharField(max_length=64, default='')
     parentdid = models.CharField(max_length=32, default='')
     path =  models.CharField(max_length=128,default='')
+
+class comment(models.Model):
+    cid = models.CharField(max_length=32, default='')
+    comid = models.CharField(max_length=32, default='')
+    info = models.TextField(default='')
+    username = models.CharField(max_length=32, default='')
+    t = models.CharField(max_length=64)
+    zan = models.IntegerField(default=0)
+
+class CommentZan(models.Model):
+    comid = models.CharField(max_length=32, default='')
+    username = models.CharField(max_length=32)

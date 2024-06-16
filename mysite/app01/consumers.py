@@ -41,6 +41,7 @@ class ChatConsumer(WebsocketConsumer):
 
     def websocket_receive(self, message):
         m = (json.loads(message['text']))
+        print(m)
         group = self.scope['url_route']['kwargs'].get("group")
         username = self.scope['url_route']['kwargs'].get("username")
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -127,7 +128,7 @@ class ChatConsumer(WebsocketConsumer):
         }))
 
     def xx_oo(self,event):
-        self.send(json.dumps({'kind':"message",
+        self.send(json.dumps({'kind':"chatmessage",
             'message': event['message']}))#给组内所有人回复
 
     # def websocket_disconnect(self, message):
@@ -146,7 +147,15 @@ class ChatConsumer(WebsocketConsumer):
         self.send(json.dumps({'kind': "user",
                               'name': event['name']}))  # 给组内所有人回复
 
-
+    def openBoard(self, event):
+        self.send(json.dumps({'kind': "open",
+                              'msg': event['message']}))  # 给组内所有人回复
+    def closeBoard(self,event):
+        self.send(json.dumps({'kind': "close",
+                              'msg': event['message']}))  # 给组内所有人回复
+    def dianming(self,event):
+        print(userList)
+        self.send(json.dumps({'kind': "dianming",'msg': event['message']['msg']}))  # 给组内所有人回复
 
 def login(request):
     print(users)

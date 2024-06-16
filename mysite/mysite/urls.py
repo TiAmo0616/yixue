@@ -71,6 +71,12 @@ urlpatterns = [
     path('deleteProblem/',views.deleteProblem),
     path('setjh/',views.setjh),
     path('sousuo/',views.sousuo),
+    path('deletelubo/',views.deletelubo),
+    path('showComments/',views.showComments),
+    path('createComment/',views.createComment),
+    path('deleteComment/',views.deleteComment),
+    path('dianzan/',views.dianzan),
+
 
 
 ]

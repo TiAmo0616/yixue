@@ -11,7 +11,7 @@
           <div class="userinfo">
             <div class="title">
               <p>基本信息</p>
-              <!-- <el-button type="text" @click="dialogFormVisible = true"><img src="../assets/image/userinfo/pencil.svg" width="20px" /></el-button> -->
+              <el-button type="text" @click="dialogFormVisible = true"><img src="../assets/image/userinfo/pencil.svg" width="20px" /></el-button>
             </div>
 
             <el-row>
@@ -115,7 +115,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="个人简介" :label-width="formLabelWidth">
-          <el-input v-model="info" autocomplete="off" clearable type="textarea" :rows="2" placeholder="请输入内容"></el-input>
+          <el-input v-model="info" autocomplete="off" clearable type="textarea" :rows="2" placeholder="请输入内容" ></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">

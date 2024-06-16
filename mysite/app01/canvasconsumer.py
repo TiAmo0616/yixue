@@ -56,6 +56,8 @@ class ChatConsumer1(WebsocketConsumer):
             async_to_sync(self.channel_layer.group_send)(group, {"type": "permitHand", "message": {'msg':msg[1],'image':msg[2]}})
         elif msg[0] == 'refuse':
             async_to_sync(self.channel_layer.group_send)(group, {"type": "refuseHand", "message": {'msg':msg[1]}})
+        elif msg[0] == 'message':
+            async_to_sync(self.channel_layer.group_send)(group, {"type": "xx.oo", "message": {'msg':msg[1]}})
         else:
 
             if msg[0] == 'clear':
@@ -66,7 +68,7 @@ class ChatConsumer1(WebsocketConsumer):
                 'message': msg,
                 'timestamp': timestamp,
             }
-            print(msg)
+            #print(msg)
             History.setdefault(group, []).append(data)
             # 通知“1”组内所有的客户端，执行XX.oo方法，在此方法内可以执行任意的功能
             async_to_sync(self.channel_layer.group_send)(group, {"type": "xx.oo", "message": data})

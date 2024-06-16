@@ -1,6 +1,6 @@
 <template>
     <div>
-        <button @click="back">返回</button>
+        <!-- <button @click="back">返回</button> -->
         <div class="card">
         <el-row>
                 <el-col :span="8" v-for="course in courses" :key="course.cid" :offset="index > 0 ? 2 : 0">

@@ -6,7 +6,7 @@
   </div>
   <!-- 图片滑动 -->
   <div>
-      <el-carousel :interval="5000" indicator-position="outside" :height="bannerHeight + 'px'">
+      <el-carousel :interval="5000" indicator-position="outside">
         <el-carousel-item v-for="course in courses.slice(0,5)" :key="course.cid">
           <div>
             <div class="backgroundpic">
@@ -32,7 +32,7 @@
 
     <div class="card">
       <el-row>
-            <el-col :span="8" v-for="course in courses" :key="course.cid" :offset="index > 0 ? 2 : 0">
+            <el-col :span="8" v-for="course in courses" :key="course.cid" >
               <el-card shadow="hover" >                
                 <div @click="see(course.cid)">
                   <img :src="course.img" alt="" />
@@ -46,9 +46,9 @@
     
   </div>
     
-  <div class="lastline">
+  <!-- <div class="lastline">
     <p>Copyright © 2024 GoodGoodStudy. All rights reserved. </p>
-  </div> 
+  </div>  -->
 
 </div>
 
@@ -116,19 +116,15 @@ export default {
    },
  
   },
-  mounted () {
-    this.setSize();
-    const that = this;
-    window.addEventListener('resize', function() {
-      that.screenWidth = $(window).width();
-      that.setSize();
-    }, false);
-  },
-  setSize: function () {
-    this.bannerHeight = 740 / 2560 * this.screenWidth
-    if(this.bannerHeight > 740) this.bannerHeight = 740
-    if(this.bannerHeight < 360) this.bannerHeight = 360
-  }
+  // mounted () {
+  //   // this.setSize();
+  //   const that = this;
+  //   window.addEventListener('resize', function() {
+  //     that.screenWidth = $(window).width();
+  //     that.setSize();
+  //   }, false);
+  // },
+ 
 }
 </script>
 
